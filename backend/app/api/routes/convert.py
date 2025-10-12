@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Query, HTTPException, Form
 from fastapi.responses import StreamingResponse
-from typing import List, Optional, Tuple
-from io import BytesIO
+from typing import List, Tuple
 import json
 from pydantic import ValidationError
 
@@ -48,14 +47,8 @@ async def convert_zip_simple(
 @router.post("/zip-custom")
 async def convert_zip_custom(
     files: List[UploadFile] = File(..., description="Wybierz 1..N plików"),
-    target_format: str = Query(..., description="Docelowy format: png|jpg|webp"),
-    options_json: str = Form(..., description="JSON lista opcji dla każdego pliku, w tej samej kolejności"),
+    options_json: str = Form(..., description="JSON lista opcji dla każdego pliku (format/quality/width/height)"),
 ):
-    try:
-        target_format = normalize_format(target_format)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
     try:
         raw = json.loads(options_json)
         if not isinstance(raw, list):
@@ -74,15 +67,21 @@ async def convert_zip_custom(
     for idx, f in enumerate(files):
         data = await f.read()
         opt = options[idx]
+
+        if not opt.format:
+            raise HTTPException(status_code=400, detail=f"Brak 'format' dla pliku #{idx+1} ({f.filename}).")
+
+        qual = opt.quality if opt.format in ("jpeg", "webp") else None
+
         try:
             converted.append(
                 convert_single_image(
                     filename=f.filename,
                     data=data,
-                    target_format=target_format,
+                    target_format=opt.format,  # per plik
                     width=opt.width,
                     height=opt.height,
-                    quality=opt.quality,
+                    quality=qual,
                 )
             )
         except ValueError as e:
