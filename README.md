@@ -44,10 +44,11 @@ Aplikacja dostępna pod adresem: http://localhost:5173
 
 - API oparte o FastAPI, z endpointami do konwersji i pobierania listy wspieranych formatów.
 
-## **Technologie
+## **Technologie**
 
 - **Frontend:** React, TypeScript, TailwindCSS, Framer Motion
 
 - **Backend:** FastAPI, Pillow
 
 - **Konteneryzacja:** Docker
+
