@@ -12,10 +12,7 @@ def convert_single_image(
     height: Optional[int] = None,
     quality: Optional[int] = None,
 ) -> Tuple[str, bytes]:
-    try:
-        target_format = normalize_format(target_format)
-    except ValueError as e:
-        raise e
+    target_format = normalize_format(target_format)
 
     try:
         img = Image.open(BytesIO(data))
@@ -35,6 +32,7 @@ def convert_single_image(
     save_kwargs = {}
     if target_format in {"jpeg", "webp"} and quality is not None:
         save_kwargs["quality"] = quality
+
     img.save(buf, format=target_format.upper(), **save_kwargs)
     buf.seek(0)
 

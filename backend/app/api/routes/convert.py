@@ -1,19 +1,25 @@
 from fastapi import APIRouter, UploadFile, File, Query, HTTPException, Form
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List, Tuple
 import json
 from pydantic import ValidationError
 
 from app.domain.conversion.service import convert_single_image
-from app.domain.conversion.utils import zip_many, normalize_format
+from app.domain.conversion.utils import zip_many, normalize_format, supported_formats
 from app.schemas.conversion import FileOptions
 
 router = APIRouter(prefix="/convert", tags=["Conversion"])
 
+@router.get("/supported")
+def get_supported_formats():
+    fmts = supported_formats()
+    preferred_ext = {"jpeg": "jpg", "tiff": "tif"} # Do lepszego wygladu na frontendzie
+    return JSONResponse({"formats": fmts, "preferred_ext": preferred_ext})
+
 @router.post("/zip-simple")
 async def convert_zip_simple(
-    files: List[UploadFile] = File(..., description="Wybierz 1..N plików"),
-    target_format: str = Query(..., description="Docelowy format: png|jpg|webp"),
+    files: List[UploadFile] = File(...),
+    target_format: str = Query(...),
 ):
     try:
         target_format = normalize_format(target_format)
@@ -46,22 +52,19 @@ async def convert_zip_simple(
 
 @router.post("/zip-custom")
 async def convert_zip_custom(
-    files: List[UploadFile] = File(..., description="Wybierz 1..N plików"),
-    options_json: str = Form(..., description="JSON lista opcji dla każdego pliku (format/quality/width/height)"),
+    files: List[UploadFile] = File(...),
+    options_json: str = Form(...),
 ):
     try:
         raw = json.loads(options_json)
         if not isinstance(raw, list):
-            raise ValueError("options_json musi być listą opcji, zgodną z kolejnością plików.")
+            raise ValueError("options_json musi być listą opcji w kolejności plików.")
         options: List[FileOptions] = [FileOptions(**item) for item in raw]
     except (json.JSONDecodeError, ValidationError, ValueError) as e:
         raise HTTPException(status_code=400, detail=f"Błędny options_json: {e}")
 
     if len(options) != len(files):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Liczba opcji ({len(options)}) musi równać się liczbie plików ({len(files)})."
-        )
+        raise HTTPException(status_code=400, detail="Niezgodna liczba opcji i plików.")
 
     converted: List[Tuple[str, bytes]] = []
     for idx, f in enumerate(files):
@@ -78,7 +81,7 @@ async def convert_zip_custom(
                 convert_single_image(
                     filename=f.filename,
                     data=data,
-                    target_format=opt.format,  # per plik
+                    target_format=opt.format,
                     width=opt.width,
                     height=opt.height,
                     quality=qual,
