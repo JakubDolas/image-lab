@@ -1,5 +1,6 @@
 import axios from "@/shared/config/axios";
 import type { FileOption, SupportedFormatsResponse } from "../types";
+export * from "../types";
 
 export async function getSupportedFormats() {
   const { data } = await axios.get<SupportedFormatsResponse>("/convert/supported");

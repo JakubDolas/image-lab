@@ -86,6 +86,9 @@ export default function ConvertPage() {
               onRemove={s.removeAt}
               availableFormats={availableFormats}
               labelMap={labelMap}
+              
+              size={s.sizes[i]}
+              onSizeChange={(sz) => s.setSizes((p) => ({ ...p, [i]: sz }))}
             />
           ))}
         </div>
