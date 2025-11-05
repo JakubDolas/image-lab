@@ -9,6 +9,7 @@ export default function App() {
           <nav className="flex gap-4 text-sm">
             <Link to="/" className="text-slate-300 hover:text-white">Start</Link>
             <Link to="/convert" className="text-slate-300 hover:text-white">Konwertuj</Link>
+            <Link to="/editor" className="text-slate-300 hover:text-white">Edytor</Link>
           </nav>
         </div>
       </header>

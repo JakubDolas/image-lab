@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api.routes.health import router as health_router
 from app.api.routes.convert import router as convert_router
+from app.api.routes.edit import router as edit_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,4 +23,5 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(convert_router)
+app.include_router(edit_router)
 

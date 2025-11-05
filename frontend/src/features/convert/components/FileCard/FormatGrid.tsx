@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { groupFormats } from "@/features/convert/components/FileCard/classifyFormats";
+import { groupFormats } from "@/features/convert/components/lib/classifyFormats";
 
 const collapse = {
   hidden: { height: 0, opacity: 0 },

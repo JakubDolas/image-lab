@@ -5,7 +5,7 @@ import QualitySlider from "./QualitySlider";
 import FormatGrid from "./FormatGrid";
 import ResizeModal from "@/features/convert/components/ResizeModal";
 
-import { formatBytes } from "@/shared/lib/bytes";
+import { formatBytes } from "@/features/convert/components/lib/bytes";
 
 function extOf(file: File) {
   return file.name.split(".").pop()?.toLowerCase() ?? "unknown";

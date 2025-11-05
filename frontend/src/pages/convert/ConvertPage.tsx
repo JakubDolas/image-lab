@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import UploadArea from "@/features/convert/components/FileCard/UploadArea";
-import ActionBar from "@/features/convert/components/FileCard/ActionBar";
+import UploadArea from "@/features/convert/components/UploadArea";
+import ActionBar from "@/features/convert/components/ActionBar";
 import FileCard from "@/features/convert/components/FileCard/FileCard";
-import { useConversionState } from "@/features/convert/components/FileCard/useConversionState";
+import { useConversionState } from "@/features/convert/components/hooks/useConversionState";
 import { getSupportedFormats } from "@/features/convert/api";
 
 export default function ConvertPage() {

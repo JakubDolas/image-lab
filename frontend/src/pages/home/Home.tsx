@@ -14,9 +14,9 @@ export default function Home() {
           <Link to="/convert" className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-semibold hover:opacity-90">
             Konwertuj teraz
           </Link>
-          <a href="#features" className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10">
-            Zobacz funkcje
-          </a>
+          <Link to="/editor" className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10">
+            Edytor zdjęć
+          </Link>
         </div>
       </section>
     </div>
