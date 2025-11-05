@@ -18,7 +18,7 @@ export type PreviewState = {
   dh: number;    // wys. docelowa (px)
 };
 
-type Props = {
+export type Props = {
   nat: { w: number; h: number } | null;
   w: number;
   h: number;

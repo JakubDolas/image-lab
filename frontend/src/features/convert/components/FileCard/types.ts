@@ -4,7 +4,7 @@ export type FileOption = {
   width: number | null;
   height: number | null;
   quality: number | null;
-  format: string;
+  format: Fmt;
 };
 
 export type SupportedFormatsResponse = {
