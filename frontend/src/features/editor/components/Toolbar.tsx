@@ -1,27 +1,20 @@
-type Props = {
-  onRemoveBg: () => void;
-  canApply: boolean;
+export default function Toolbar({
+  canUndo, canRedo, onUndo, onRedo, onPickOther, onDownload, busy,
+}: {
+  canUndo: boolean; canRedo: boolean;
+  onUndo: () => void; onRedo: () => void;
+  onPickOther: () => void; onDownload: () => void;
   busy: boolean;
-};
-
-export default function Toolbar({ onRemoveBg, canApply, busy }: Props) {
+}) {
+  const btn = "rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 disabled:opacity-50";
   return (
-    <div className="h-full w-64 shrink-0 border-r border-white/10 bg-white/[.03] p-3">
-      <div className="mb-3 text-xs text-slate-400">Narzędzia</div>
-
-      <button
-        type="button"
-        disabled={!canApply || busy}
-        onClick={onRemoveBg}
-        className={`w-full rounded-lg px-3 py-2 text-sm transition
-          ${busy
-            ? "bg-indigo-500/30 text-slate-300 cursor-not-allowed"
-            : canApply
-              ? "bg-indigo-600 text-white hover:brightness-110"
-              : "bg-white/10 text-slate-300 cursor-not-allowed"}`}
-      >
-        {busy ? "Usuwanie tła…" : "Usuń tło (AI)"}
-      </button>
+    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] px-3 py-2">
+      <button className={btn} onClick={onUndo} disabled={!canUndo || busy}>Cofnij</button>
+      <button className={btn} onClick={onRedo} disabled={!canRedo || busy}>Do przodu</button>
+      <div className="mx-2 h-6 w-px bg-white/10" />
+      <button className={btn} onClick={onPickOther} disabled={busy}>Wybierz inny plik</button>
+      <div className="grow" />
+      <button className={btn} onClick={onDownload} disabled={busy}>Pobierz</button>
     </div>
   );
 }

@@ -1,59 +1,41 @@
 import { useCallback, useRef } from "react";
 
-type Props = {
-  imageUrl: string | null;
-  onPickFile: (file: File) => void;
-};
-
-export default function Canvas({ imageUrl, onPickFile }: Props) {
+export default function Canvas({
+  imageUrl, onPickFile,
+}: { imageUrl: string | null; onPickFile: (file: File) => void; }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      const f = e.dataTransfer.files?.[0];
-      if (f) onPickFile(f);
-    },
-    [onPickFile]
-  );
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (f) onPickFile(f);
+  }, [onPickFile]);
 
   return (
-    <div className="flex-1 p-4">
+    <div className="relative flex-1">
       <div
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
-        className="relative flex h-[70vh] items-center justify-center rounded-2xl border border-dashed border-white/15 bg-black/20"
+        className="relative h-[72vh] rounded-2xl border-2 border-dashed border-white/10 bg-black/20"
       >
         {imageUrl ? (
           <img
             src={imageUrl}
             alt=""
-            className="max-h-full max-w-full select-none rounded-lg object-contain"
             draggable={false}
+            className="absolute left-1/2 top-1/2 max-h-[90%] max-w-[90%] -translate-x-1/2 -translate-y-1/2 select-none rounded-lg object-contain"
           />
         ) : (
-          <div className="text-sm text-slate-400">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
             Przeciągnij obraz tutaj albo{" "}
-            <button
-              onClick={() => inputRef.current?.click()}
-              className="text-indigo-300 underline underline-offset-2"
-              type="button"
-            >
+            <button className="text-indigo-300 underline underline-offset-2"
+              onClick={() => inputRef.current?.click()} type="button">
               wybierz z dysku
             </button>
           </div>
         )}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPickFile(f);
-          }}
-        />
+        <input ref={inputRef} type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onPickFile(f); }} />
       </div>
     </div>
   );
