@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import UploadArea from "@/features/convert/components/UploadArea";
 import ActionBar from "@/features/convert/components/ActionBar";
 import FileCard from "@/features/convert/components/FileCard/FileCard";
-import { useConversionState } from "@/features/convert/hooks/useConversionState";
+import { useConversionState } from "@/features/convert/components/hooks/useConversionState";
 import { getSupportedFormats } from "@/features/convert/api";
 
 export default function ConvertPage() {
@@ -86,6 +86,9 @@ export default function ConvertPage() {
               onRemove={s.removeAt}
               availableFormats={availableFormats}
               labelMap={labelMap}
+              
+              size={s.sizes[i]}
+              onSizeChange={(sz) => s.setSizes((p) => ({ ...p, [i]: sz }))}
             />
           ))}
         </div>
