@@ -7,7 +7,6 @@ export function useConversionState() {
   const [files, setFiles] = useState<File[]>([]);
   const [formats, setFormats] = useState<Record<number, Fmt>>({});
   const [quality, setQuality] = useState<Record<number, number>>({});
-  // NOWE: rozmiary per plik
   const [sizes, setSizes] = useState<Record<number, { width: number | null; height: number | null }>>({});
 
   const [busy, setBusy] = useState(false);
@@ -120,7 +119,6 @@ export function useConversionState() {
     quality,
     setQuality,
 
-    // rozmiary
     sizes,
     setSizes,
 
