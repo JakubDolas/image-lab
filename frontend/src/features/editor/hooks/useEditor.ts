@@ -113,6 +113,7 @@ export function useEditor() {
       );
       if (blob) {
         pushStep(blob);
+        setFilters(DEFAULT_FILTERS);
       }
     } finally {
       setBusy(false);
