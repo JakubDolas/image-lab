@@ -44,7 +44,9 @@ export default function Sidebar({
     });
 
   return (
-    <aside className="w-[260px] rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3">
+    <aside
+      className="
+        w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
       <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-slate-400">
         Narzędzia
       </div>
@@ -83,12 +85,7 @@ export default function Sidebar({
           toggle={toggle}
         />
 
-        <SectionShell
-          id="file"
-          title="Plik"
-          openIds={openIds}
-          toggle={toggle}
-        >
+        <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
           <button
             type="button"
             onClick={onPickOther}
