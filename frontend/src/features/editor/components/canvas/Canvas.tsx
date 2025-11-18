@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef } from "react";
-import type { DragEvent } from "react";
+import { useEffect } from "react";
 import type { Filters, CropRect } from "@/features/editor/types";
-import { buildCssFilter } from "@/features/editor/types";
-import { CropOverlay } from "./CropOverlay";
+import { CanvasViewport } from "./CanvasViewport";
+import { ZoomPanel } from "./ZoomPanel";
+import { useZoom } from "./useZoom";
 
 type Props = {
   imageUrl: string | null;
@@ -13,6 +13,10 @@ type Props = {
   onChangeCropRect: (rect: CropRect) => void;
 };
 
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 4;
+const STEP_ZOOM = 0.25;
+
 export default function Canvas({
   imageUrl,
   onPickFile,
@@ -21,69 +25,42 @@ export default function Canvas({
   cropRect,
   onChangeCropRect,
 }: Props) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const {
+    zoom,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    setZoom,
+    minZoom,
+    maxZoom,
+  } = useZoom({ min: MIN_ZOOM, max: MAX_ZOOM, step: STEP_ZOOM });
 
-  const onDrop = useCallback(
-    (e: DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const f = e.dataTransfer.files?.[0];
-      if (f) onPickFile(f);
-    },
-    [onPickFile]
-  );
-
-  const cssFilter = useMemo(() => buildCssFilter(filters), [filters]);
+  useEffect(() => {
+    setZoom(1);
+  }, [imageUrl, setZoom]);
 
   return (
     <div className="relative flex-1">
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={onDrop}
-        className="relative h-[72vh] rounded-2xl border-2 border-dashed border-white/10 bg-black/20"
-      >
-        {imageUrl ? (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="relative inline-block max-h-[90vh] max-w-[90vw]">
-              <img
-                src={imageUrl}
-                alt=""
-                draggable={false}
-                style={{ filter: cssFilter }}
-                className="block max-h-[72vh] max-w-[72vw] rounded-lg object-contain"
-              />
+      <CanvasViewport
+        imageUrl={imageUrl}
+        onPickFile={onPickFile}
+        filters={filters}
+        cropEnabled={cropEnabled}
+        cropRect={cropRect}
+        onChangeCropRect={onChangeCropRect}
+        zoom={zoom}
+      />
 
-              {cropEnabled && (
-                <CropOverlay
-                  rect={cropRect}
-                  onChange={onChangeCropRect}
-                />
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
-            Przeciągnij obraz tutaj albo{" "}
-            <button
-              className="text-indigo-300 underline underline-offset-2"
-              onClick={() => inputRef.current?.click()}
-              type="button"
-            >
-              wybierz z dysku
-            </button>
-          </div>
-        )}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onPickFile(f);
-          }}
+      {imageUrl && (
+        <ZoomPanel
+          zoom={zoom}
+          minZoom={minZoom}
+          maxZoom={maxZoom}
+          onZoomIn={zoomIn}
+          onZoomOut={zoomOut}
+          onReset={resetZoom}
         />
-      </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,117 @@
+import { useCallback, useMemo, useRef } from "react";
+import type { DragEvent } from "react";
+import type { Filters, CropRect } from "@/features/editor/types";
+import { buildCssFilter } from "@/features/editor/types";
+import { CropOverlay } from "./CropOverlay";
+
+type Props = {
+  imageUrl: string | null;
+  onPickFile: (file: File) => void;
+  filters: Filters;
+  cropEnabled: boolean;
+  cropRect: CropRect | null;
+  onChangeCropRect: (rect: CropRect) => void;
+  zoom: number;
+};
+
+export function CanvasViewport({
+  imageUrl,
+  onPickFile,
+  filters,
+  cropEnabled,
+  cropRect,
+  onChangeCropRect,
+  zoom,
+}: Props) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const onDrop = useCallback(
+    (e: DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      const f = e.dataTransfer.files?.[0];
+      if (f) onPickFile(f);
+    },
+    [onPickFile]
+  );
+
+  const cssFilter = useMemo(() => buildCssFilter(filters), [filters]);
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDrop}
+      className="
+        relative
+        h-[72vh]
+        rounded-2xl
+        border-2 border-dashed border-white/10
+        bg-black/20
+        overflow-auto
+        nice-scrollbar
+      "
+    >
+      {imageUrl ? (
+        <div
+          className={
+            zoom <= 1
+              ? "flex h-full items-center justify-center"
+              : "block"
+          }
+        >
+          <div
+            className="
+              relative
+              mx-auto
+              transition-transform
+              duration-300
+              ease-out
+            "
+            style={{
+              transform: `scale(${zoom})`,
+              transformOrigin: "center center",
+            }}
+          >
+            <img
+              src={imageUrl}
+              draggable={false}
+              style={{ filter: cssFilter }}
+              className={
+                "block w-full h-auto rounded-lg object-contain " +
+                (zoom <= 1 ? "max-h-[72vh]" : "")
+              }
+            />
+
+            {cropEnabled && (
+              <CropOverlay
+                rect={cropRect}
+                onChange={onChangeCropRect}
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
+          Przeciągnij obraz tutaj albo{" "}
+          <button
+            className="text-indigo-300 underline underline-offset-2"
+            onClick={() => inputRef.current?.click()}
+            type="button"
+          >
+            wybierz z dysku
+          </button>
+        </div>
+      )}
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onPickFile(f);
+        }}
+      />
+    </div>
+  );
+}
