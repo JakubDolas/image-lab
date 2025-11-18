@@ -22,6 +22,13 @@ export const DEFAULT_FILTERS: Filters = {
   blur: 0,
 };
 
+export type CropRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export function buildCssFilter(f: Filters): string {
   const t = Math.max(-100, Math.min(100, f.temperature));
   const warm =
