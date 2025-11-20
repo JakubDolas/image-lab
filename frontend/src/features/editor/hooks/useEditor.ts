@@ -6,6 +6,8 @@ import {
   buildCssFilter,
 } from "@/features/editor/types";
 import { removeBg } from "@/features/editor/api/removeBg";
+import { upscaleImage } from "@/features/editor/api/upscale";
+
 
 type Step = {
   blob: Blob;
@@ -71,6 +73,17 @@ export function useEditor() {
     setBusy(true);
     try {
       const blob = await removeBg(current.blob);
+      pushStep(blob);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onUpscale = async () => {
+    if (!current) return;
+    setBusy(true);
+    try {
+      const blob = await upscaleImage(current.blob);
       pushStep(blob);
     } finally {
       setBusy(false);
@@ -217,6 +230,7 @@ export function useEditor() {
       onRedo,
       pickOther,
       onRemoveBg,
+      onUpscale,
       handleStartCrop,
       handleCancelCrop,
       handleApplyCrop,

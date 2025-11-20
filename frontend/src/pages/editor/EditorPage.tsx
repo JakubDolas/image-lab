@@ -26,6 +26,7 @@ export default function EditorPage() {
       onRedo,
       pickOther,
       onRemoveBg,
+      onUpscale,
       handleStartCrop,
       handleCancelCrop,
       handleApplyCrop,
@@ -44,6 +45,7 @@ export default function EditorPage() {
         <Sidebar
           busy={busy}
           onRemoveBg={onRemoveBg}
+          onUpscale={onUpscale}
           onPickOther={pickOther}
           filters={filters}
           setFilters={setFilters}
@@ -73,6 +75,7 @@ export default function EditorPage() {
             cropEnabled={cropEnabled}
             cropRect={cropRect}
             onChangeCropRect={setCropRect}
+            busy={busy}
           />
         </div>
       </div>

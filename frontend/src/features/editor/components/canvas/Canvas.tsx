@@ -11,6 +11,7 @@ type Props = {
   cropEnabled: boolean;
   cropRect: CropRect | null;
   onChangeCropRect: (rect: CropRect) => void;
+  busy: boolean;
 };
 
 const MIN_ZOOM = 0.5;
@@ -24,6 +25,7 @@ export default function Canvas({
   cropEnabled,
   cropRect,
   onChangeCropRect,
+  busy,
 }: Props) {
   const {
     zoom,
@@ -49,6 +51,7 @@ export default function Canvas({
         cropRect={cropRect}
         onChangeCropRect={onChangeCropRect}
         zoom={zoom}
+        busy={busy}
       />
 
       {imageUrl && (

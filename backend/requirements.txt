@@ -5,3 +5,5 @@ python-multipart==0.0.9
 sqlalchemy==2.0.35
 psycopg2-binary==2.9.10
 rembg==2.0.56
+onnxruntime==1.19.2
+numpy==2.0.2

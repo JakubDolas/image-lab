@@ -10,6 +10,8 @@ import SectionShell from "./SectionShell";
 type Props = {
   busy: boolean;
   onRemoveBg: () => void;
+  onUpscale: () => void;
+
   onPickOther: () => void;
 
   filters: Filters;
@@ -25,6 +27,7 @@ type Props = {
 export default function Sidebar({
   busy,
   onRemoveBg,
+  onUpscale,
   onPickOther,
   filters,
   setFilters,
@@ -55,6 +58,7 @@ export default function Sidebar({
         <AiSection
           busy={busy}
           onRemoveBg={onRemoveBg}
+          onUpscale={onUpscale}
           openIds={openIds}
           toggle={toggle}
         />
