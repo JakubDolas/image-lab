@@ -62,13 +62,13 @@ export function CanvasViewport({
             className="
               relative
               mx-auto
-              transition-transform
+              transition-all
               duration-300
               ease-out
             "
             style={{
-              transform: `scale(${zoom})`,
-              transformOrigin: "center center",
+              width: `${zoom * 100}%`,
+              maxWidth: zoom <= 1 ? "100%" : undefined,
             }}
           >
             <img

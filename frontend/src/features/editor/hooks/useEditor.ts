@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import {
   DEFAULT_FILTERS,
   type Filters,
@@ -10,6 +10,11 @@ import { removeBg } from "@/features/editor/api/removeBg";
 type Step = {
   blob: Blob;
 };
+
+type ImageSize = {
+  width: number;
+  height: number;
+} | null;
 
 export function useEditor() {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -23,6 +28,8 @@ export function useEditor() {
 
   const [cropEnabled, setCropEnabled] = useState(false);
   const [cropRect, setCropRect] = useState<CropRect | null>(null);
+
+  const [imageSize, setImageSize] = useState<ImageSize>(null);
 
   const imageUrl = useMemo(
     () => (current ? URL.createObjectURL(current.blob) : null),
@@ -158,6 +165,37 @@ export function useEditor() {
     }
   };
 
+  const updateImageSize = useCallback(async (blob: Blob) => {
+    try {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.src = url;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = (e) => reject(e);
+      });
+
+      setImageSize({
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
+
+      URL.revokeObjectURL(url);
+    } catch {
+      setImageSize(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (current) {
+      updateImageSize(current.blob);
+    } else {
+      setImageSize(null);
+    }
+  }, [current, updateImageSize]);
+
+
   return {
     ref: { inputRef },
     state: {
@@ -169,6 +207,7 @@ export function useEditor() {
       cropRect,
       canUndo: ptr > 0,
       canRedo: ptr < steps.length - 1,
+      imageSize,
     },
     actions: {
       setFilters,

@@ -1,10 +1,11 @@
 export default function Toolbar({
-  canUndo, canRedo, onUndo, onRedo, onPickOther, onDownload, busy,
+  canUndo, canRedo, onUndo, onRedo, onPickOther, onDownload, busy, imageSize,
 }: {
   canUndo: boolean; canRedo: boolean;
   onUndo: () => void; onRedo: () => void;
   onPickOther: () => void; onDownload: () => void;
   busy: boolean;
+  imageSize: { width: number; height: number } | null;
 }) {
   const btn = "rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 disabled:opacity-50";
   return (
@@ -13,6 +14,14 @@ export default function Toolbar({
       <button className={btn} onClick={onRedo} disabled={!canRedo || busy}>Do przodu</button>
       <div className="mx-2 h-6 w-px bg-white/10" />
       <button className={btn} onClick={onPickOther} disabled={busy}>Wybierz inny plik</button>
+      {imageSize && (
+        <div className="ml-4 text-xs text-slate-300">
+          Wymiary obrazu:{" "}
+          <span className="font-mono text-slate-100">
+            {imageSize.width} × {imageSize.height}px
+          </span>
+        </div>
+      )}
       <div className="grow" />
       <button className={btn} onClick={onDownload} disabled={busy}>Pobierz</button>
     </div>

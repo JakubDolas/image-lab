@@ -16,6 +16,7 @@ export default function EditorPage() {
       cropRect,
       canUndo,
       canRedo,
+      imageSize,
     },
     actions: {
       setFilters,
@@ -62,6 +63,7 @@ export default function EditorPage() {
             onRedo={onRedo}
             onPickOther={pickOther}
             onDownload={onDownload}
+            imageSize={imageSize}
           />
 
           <Canvas
