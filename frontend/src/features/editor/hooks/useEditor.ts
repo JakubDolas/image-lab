@@ -7,13 +7,13 @@ import {
 } from "@/features/editor/types";
 import { removeBg } from "@/features/editor/api/removeBg";
 import { upscaleImage } from "@/features/editor/api/upscale";
-
+import { downloadSingleImage } from "@/features/editor/api/download";
 
 type Step = {
   blob: Blob;
 };
 
-type ImageSize = {
+export type ImageSize = {
   width: number;
   height: number;
 } | null;
@@ -142,38 +142,19 @@ export function useEditor() {
     }
   };
 
-  const onDownload = async () => {
+  const onDownload = async (format: string, quality: number) => {
     if (!current) return;
     setBusy(true);
-    const url = URL.createObjectURL(current.blob);
     try {
-      const img = new Image();
-      img.src = url;
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = (e) => reject(e);
-      });
+      const zipBlob = await downloadSingleImage(current.blob, format, quality);
 
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      ctx.filter = buildCssFilter(filters);
-      ctx.drawImage(img, 0, 0);
-
-      canvas.toBlob((out) => {
-        if (!out) return;
-        const dlUrl = URL.createObjectURL(out);
-        const a = document.createElement("a");
-        a.href = dlUrl;
-        a.download = "image.png";
-        a.click();
-        URL.revokeObjectURL(dlUrl);
-      }, "image/png");
-    } finally {
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `image_${format}.zip`;
+      a.click();
       URL.revokeObjectURL(url);
+    } finally {
       setBusy(false);
     }
   };
@@ -207,7 +188,6 @@ export function useEditor() {
       setImageSize(null);
     }
   }, [current, updateImageSize]);
-
 
   return {
     ref: { inputRef },

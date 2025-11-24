@@ -1,6 +1,8 @@
+import { useState } from "react";
 import Canvas from "@/features/editor/components/canvas/Canvas";
 import Sidebar from "@/features/editor/components/sidebar/Sidebar";
 import Toolbar from "@/features/editor/components/toolbar/Toolbar";
+import DownloadModal from "@/features/editor/components/toolbar/DownloadModal";
 import { EditorEmptyState } from "@/features/editor/components/EditorEmptyState";
 import { useEditor } from "@/features/editor/hooks/useEditor";
 
@@ -35,6 +37,10 @@ export default function EditorPage() {
     },
   } = useEditor();
 
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [dlFormat, setDlFormat] = useState("png");
+  const [dlQuality, setDlQuality] = useState(90);
+
   if (!current) {
     return <EditorEmptyState onPickFile={onPickFile} />;
   }
@@ -64,7 +70,7 @@ export default function EditorPage() {
             onUndo={onUndo}
             onRedo={onRedo}
             onPickOther={pickOther}
-            onDownload={onDownload}
+            onOpenDownload={() => setDownloadOpen(true)}
             imageSize={imageSize}
           />
 
@@ -89,6 +95,19 @@ export default function EditorPage() {
           const f = e.target.files?.[0];
           if (f) onPickFile(f);
           e.currentTarget.value = "";
+        }}
+      />
+
+      <DownloadModal
+        open={downloadOpen}
+        valueFormat={dlFormat}
+        valueQuality={dlQuality}
+        onChangeFormat={setDlFormat}
+        onChangeQuality={setDlQuality}
+        onCancel={() => setDownloadOpen(false)}
+        onConfirm={() => {
+          onDownload(dlFormat, dlQuality);
+          setDownloadOpen(false);
         }}
       />
     </div>
