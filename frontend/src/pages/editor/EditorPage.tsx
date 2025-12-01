@@ -1,6 +1,8 @@
-import Canvas from "@/features/editor/components/canvas/Canvas";
+import { useRef, useState } from "react";
+import Canvas, { type CanvasHandle } from "@/features/editor/components/canvas/Canvas";
 import Sidebar from "@/features/editor/components/sidebar/Sidebar";
 import Toolbar from "@/features/editor/components/toolbar/Toolbar";
+import DownloadModal from "@/features/editor/components/toolbar/DownloadModal";
 import { EditorEmptyState } from "@/features/editor/components/EditorEmptyState";
 import { useEditor } from "@/features/editor/hooks/useEditor";
 
@@ -16,6 +18,10 @@ export default function EditorPage() {
       cropRect,
       canUndo,
       canRedo,
+      imageSize,
+      drawingMode,
+      brushSize,
+      brushColor,
     },
     actions: {
       setFilters,
@@ -25,17 +31,45 @@ export default function EditorPage() {
       onRedo,
       pickOther,
       onRemoveBg,
+      onUpscale,
       handleStartCrop,
       handleCancelCrop,
       handleApplyCrop,
       onDownload,
       setCropRect,
+      setDrawingMode,
+      setBrushSize,
+      setBrushColor,
+      onApplyDrawing,
     },
   } = useEditor();
+
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [dlFormat, setDlFormat] = useState("png");
+  const [dlQuality, setDlQuality] = useState(90);
+
+  const canvasRef = useRef<CanvasHandle | null>(null);
 
   if (!current) {
     return <EditorEmptyState onPickFile={onPickFile} />;
   }
+
+  const handleToggleDrawing = () => {
+    setDrawingMode(drawingMode === "off" ? "draw" : "off");
+  };
+
+  const handleToggleEraser = () => {
+    if (drawingMode === "erase") {
+      setDrawingMode("draw");
+    } else {
+      setDrawingMode("erase");
+    }
+  };
+
+  const handleApplyDrawingClick = () => {
+    setDrawingMode("off");
+    canvasRef.current?.applyDrawing();
+  };
 
   return (
     <div className="mx-auto max-w-[1300px]">
@@ -43,6 +77,7 @@ export default function EditorPage() {
         <Sidebar
           busy={busy}
           onRemoveBg={onRemoveBg}
+          onUpscale={onUpscale}
           onPickOther={pickOther}
           filters={filters}
           setFilters={setFilters}
@@ -51,6 +86,14 @@ export default function EditorPage() {
           onStartCrop={handleStartCrop}
           onApplyCrop={handleApplyCrop}
           onCancelCrop={handleCancelCrop}
+          drawingMode={drawingMode}
+          brushSize={brushSize}
+          brushColor={brushColor}
+          onToggleDrawing={handleToggleDrawing}
+          onToggleEraser={handleToggleEraser}
+          onChangeBrushSize={setBrushSize}
+          onChangeBrushColor={setBrushColor}
+          onApplyDrawingClick={handleApplyDrawingClick}
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -61,16 +104,23 @@ export default function EditorPage() {
             onUndo={onUndo}
             onRedo={onRedo}
             onPickOther={pickOther}
-            onDownload={onDownload}
+            onOpenDownload={() => setDownloadOpen(true)}
+            imageSize={imageSize}
           />
 
           <Canvas
+            ref={canvasRef}
             imageUrl={imageUrl}
             onPickFile={onPickFile}
             filters={filters}
             cropEnabled={cropEnabled}
             cropRect={cropRect}
             onChangeCropRect={setCropRect}
+            busy={busy}
+            drawingMode={drawingMode}
+            brushSize={brushSize}
+            brushColor={brushColor}
+            onApplyDrawing={onApplyDrawing}
           />
         </div>
       </div>
@@ -84,6 +134,19 @@ export default function EditorPage() {
           const f = e.target.files?.[0];
           if (f) onPickFile(f);
           e.currentTarget.value = "";
+        }}
+      />
+
+      <DownloadModal
+        open={downloadOpen}
+        valueFormat={dlFormat}
+        valueQuality={dlQuality}
+        onChangeFormat={setDlFormat}
+        onChangeQuality={setDlQuality}
+        onCancel={() => setDownloadOpen(false)}
+        onConfirm={() => {
+          onDownload(dlFormat, dlQuality);
+          setDownloadOpen(false);
         }}
       />
     </div>

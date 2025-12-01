@@ -10,16 +10,18 @@ from app.schemas.conversion import FileOptions
 
 router = APIRouter(prefix="/convert", tags=["Conversion"])
 
+
 @router.get("/supported")
 def get_supported_formats():
     fmts = supported_formats()
-    preferred_ext = {"jpeg": "jpg", "tiff": "tif"} # Do lepszego wygladu na frontendzie
+    preferred_ext = {"jpeg": "jpg", "tiff": "tif"}
     return JSONResponse({"formats": fmts, "preferred_ext": preferred_ext})
 
 @router.post("/zip-simple")
 async def convert_zip_simple(
     files: List[UploadFile] = File(...),
     target_format: str = Query(...),
+    quality: int | None = Query(None),
 ):
     try:
         target_format = normalize_format(target_format)
@@ -37,7 +39,7 @@ async def convert_zip_simple(
                     target_format=target_format,
                     width=None,
                     height=None,
-                    quality=None,
+                    quality=quality,
                 )
             )
         except ValueError as e:
@@ -49,6 +51,7 @@ async def convert_zip_simple(
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="converted.zip"'}
     )
+
 
 @router.post("/zip-custom")
 async def convert_zip_custom(
