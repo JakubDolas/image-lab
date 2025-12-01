@@ -6,6 +6,7 @@ import ColorSection from "./ColorSection";
 import EffectsSection from "./EffectsSection";
 import CropSection from "./CropSection";
 import SectionShell from "./SectionShell";
+import DrawingSection from "./DrawingSection";
 
 type Props = {
   busy: boolean;
@@ -22,6 +23,16 @@ type Props = {
   onStartCrop: () => void;
   onApplyCrop: () => void;
   onCancelCrop: () => void;
+
+  drawingMode: "off" | "draw" | "erase";
+  brushSize: number;
+  brushColor: string;
+  onToggleDrawing: () => void;
+  onToggleEraser: () => void;
+  onChangeBrushSize: (v: number) => void;
+  onChangeBrushColor: (v: string) => void;
+
+  onApplyDrawingClick: () => void;
 };
 
 export default function Sidebar({
@@ -36,6 +47,14 @@ export default function Sidebar({
   onStartCrop,
   onApplyCrop,
   onCancelCrop,
+  drawingMode,
+  brushSize,
+  brushColor,
+  onToggleDrawing,
+  onToggleEraser,
+  onChangeBrushSize,
+  onChangeBrushColor,
+  onApplyDrawingClick,
 }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
 
@@ -46,58 +65,86 @@ export default function Sidebar({
       return next;
     });
 
+  const toolsLocked = drawingMode !== "off";
+
   return (
     <aside
       className="
-        w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
+        w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10
+        bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar
+      "
+    >
       <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-slate-400">
         Narzędzia
       </div>
 
       <div className="flex flex-col gap-2">
-        <AiSection
-          busy={busy}
-          onRemoveBg={onRemoveBg}
-          onUpscale={onUpscale}
+        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+          <AiSection
+            busy={busy}
+            onRemoveBg={onRemoveBg}
+            onUpscale={onUpscale}
+            openIds={openIds}
+            toggle={toggle}
+          />
+        </div>
+
+        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+          <ColorSection
+            filters={filters}
+            setFilters={setFilters}
+            onResetFilters={onResetFilters}
+            openIds={openIds}
+            toggle={toggle}
+          />
+        </div>
+
+        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+          <EffectsSection
+            filters={filters}
+            setFilters={setFilters}
+            onResetFilters={onResetFilters}
+            openIds={openIds}
+            toggle={toggle}
+          />
+        </div>
+
+        <DrawingSection
           openIds={openIds}
           toggle={toggle}
+          drawingMode={drawingMode}
+          brushSize={brushSize}
+          brushColor={brushColor}
+          onToggleDrawing={onToggleDrawing}
+          onToggleEraser={onToggleEraser}
+          onChangeBrushSize={onChangeBrushSize}
+          onChangeBrushColor={onChangeBrushColor}
+          onApplyDrawingClick={onApplyDrawingClick}
         />
 
-        <ColorSection
-          filters={filters}
-          setFilters={setFilters}
-          onResetFilters={onResetFilters}
-          openIds={openIds}
-          toggle={toggle}
-        />
+        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+          <CropSection
+            busy={busy}
+            cropEnabled={cropEnabled}
+            onStartCrop={onStartCrop}
+            onApplyCrop={onApplyCrop}
+            onCancelCrop={onCancelCrop}
+            openIds={openIds}
+            toggle={toggle}
+          />
+        </div>
 
-        <EffectsSection
-          filters={filters}
-          setFilters={setFilters}
-          onResetFilters={onResetFilters}
-          openIds={openIds}
-          toggle={toggle}
-        />
-
-        <CropSection
-          busy={busy}
-          cropEnabled={cropEnabled}
-          onStartCrop={onStartCrop}
-          onApplyCrop={onApplyCrop}
-          onCancelCrop={onCancelCrop}
-          openIds={openIds}
-          toggle={toggle}
-        />
-
-        <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
-          <button
-            type="button"
-            onClick={onPickOther}
-            className="h-9 w-full rounded-xl border border-white/10 bg-white/10 px-3 text-sm hover:bg-white/15"
-          >
-            Wybierz inne zdjęcie
-          </button>
-        </SectionShell>
+        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+          <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
+            <button
+              type="button"
+              onClick={onPickOther}
+              className="h-9 w-full rounded-xl border border-white/10 bg-white/10 px-3 text-sm hover:bg-white/15"
+            >
+              Wybierz inne zdjęcie
+            </button>
+          </SectionShell>
+        </div>
       </div>
     </aside>
   );

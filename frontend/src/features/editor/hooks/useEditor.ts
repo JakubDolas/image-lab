@@ -18,6 +18,40 @@ export type ImageSize = {
   height: number;
 } | null;
 
+async function applyFiltersToBlob(
+  blob: Blob,
+  filters: Filters
+): Promise<Blob> {
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.src = url;
+
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = (e) => reject(e);
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    URL.revokeObjectURL(url);
+    return blob;
+  }
+
+  ctx.filter = buildCssFilter(filters);
+  ctx.drawImage(img, 0, 0);
+
+  const outBlob: Blob | null = await new Promise((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/png")
+  );
+
+  URL.revokeObjectURL(url);
+  return outBlob ?? blob;
+}
+
 export function useEditor() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -32,6 +66,12 @@ export function useEditor() {
   const [cropRect, setCropRect] = useState<CropRect | null>(null);
 
   const [imageSize, setImageSize] = useState<ImageSize>(null);
+
+  type DrawingMode = "off" | "draw" | "erase";
+
+  const [drawingMode, setDrawingMode] = useState<DrawingMode>("off");
+  const [brushSize, setBrushSize] = useState(5);
+  const [brushColor, setBrushColor] = useState("#ff0000");
 
   const imageUrl = useMemo(
     () => (current ? URL.createObjectURL(current.blob) : null),
@@ -146,7 +186,9 @@ export function useEditor() {
     if (!current) return;
     setBusy(true);
     try {
-      const zipBlob = await downloadSingleImage(current.blob, format, quality);
+      const filteredBlob = await applyFiltersToBlob(current.blob, filters);
+
+      const zipBlob = await downloadSingleImage(filteredBlob, format, quality);
 
       const url = URL.createObjectURL(zipBlob);
       const a = document.createElement("a");
@@ -201,6 +243,9 @@ export function useEditor() {
       canUndo: ptr > 0,
       canRedo: ptr < steps.length - 1,
       imageSize,
+      drawingMode,
+      brushSize,
+      brushColor,
     },
     actions: {
       setFilters,
@@ -216,6 +261,14 @@ export function useEditor() {
       handleApplyCrop,
       onDownload,
       setCropRect,
+      setDrawingMode,
+      setBrushSize,
+      setBrushColor,
+      onApplyDrawing: (blob: Blob) => {
+        pushStep(blob);
+        setFilters(DEFAULT_FILTERS);
+
+      },
     },
   };
 }

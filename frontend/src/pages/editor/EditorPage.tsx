@@ -1,5 +1,5 @@
-import { useState } from "react";
-import Canvas from "@/features/editor/components/canvas/Canvas";
+import { useRef, useState } from "react";
+import Canvas, { type CanvasHandle } from "@/features/editor/components/canvas/Canvas";
 import Sidebar from "@/features/editor/components/sidebar/Sidebar";
 import Toolbar from "@/features/editor/components/toolbar/Toolbar";
 import DownloadModal from "@/features/editor/components/toolbar/DownloadModal";
@@ -19,6 +19,9 @@ export default function EditorPage() {
       canUndo,
       canRedo,
       imageSize,
+      drawingMode,
+      brushSize,
+      brushColor,
     },
     actions: {
       setFilters,
@@ -34,6 +37,10 @@ export default function EditorPage() {
       handleApplyCrop,
       onDownload,
       setCropRect,
+      setDrawingMode,
+      setBrushSize,
+      setBrushColor,
+      onApplyDrawing,
     },
   } = useEditor();
 
@@ -41,9 +48,28 @@ export default function EditorPage() {
   const [dlFormat, setDlFormat] = useState("png");
   const [dlQuality, setDlQuality] = useState(90);
 
+  const canvasRef = useRef<CanvasHandle | null>(null);
+
   if (!current) {
     return <EditorEmptyState onPickFile={onPickFile} />;
   }
+
+  const handleToggleDrawing = () => {
+    setDrawingMode(drawingMode === "off" ? "draw" : "off");
+  };
+
+  const handleToggleEraser = () => {
+    if (drawingMode === "erase") {
+      setDrawingMode("draw");
+    } else {
+      setDrawingMode("erase");
+    }
+  };
+
+  const handleApplyDrawingClick = () => {
+    setDrawingMode("off");
+    canvasRef.current?.applyDrawing();
+  };
 
   return (
     <div className="mx-auto max-w-[1300px]">
@@ -60,6 +86,14 @@ export default function EditorPage() {
           onStartCrop={handleStartCrop}
           onApplyCrop={handleApplyCrop}
           onCancelCrop={handleCancelCrop}
+          drawingMode={drawingMode}
+          brushSize={brushSize}
+          brushColor={brushColor}
+          onToggleDrawing={handleToggleDrawing}
+          onToggleEraser={handleToggleEraser}
+          onChangeBrushSize={setBrushSize}
+          onChangeBrushColor={setBrushColor}
+          onApplyDrawingClick={handleApplyDrawingClick}
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -75,6 +109,7 @@ export default function EditorPage() {
           />
 
           <Canvas
+            ref={canvasRef}
             imageUrl={imageUrl}
             onPickFile={onPickFile}
             filters={filters}
@@ -82,6 +117,10 @@ export default function EditorPage() {
             cropRect={cropRect}
             onChangeCropRect={setCropRect}
             busy={busy}
+            drawingMode={drawingMode}
+            brushSize={brushSize}
+            brushColor={brushColor}
+            onApplyDrawing={onApplyDrawing}
           />
         </div>
       </div>
