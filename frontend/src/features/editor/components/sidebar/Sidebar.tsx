@@ -27,12 +27,15 @@ type Props = {
   drawingMode: "off" | "draw" | "erase";
   brushSize: number;
   brushColor: string;
-  onToggleDrawing: () => void;
-  onToggleEraser: () => void;
+
+  onSetDraw: () => void;
+  onSetErase: () => void;
+
   onChangeBrushSize: (v: number) => void;
   onChangeBrushColor: (v: string) => void;
 
   onApplyDrawingClick: () => void;
+  onCancelDrawingClick: () => void;
 };
 
 export default function Sidebar({
@@ -50,11 +53,12 @@ export default function Sidebar({
   drawingMode,
   brushSize,
   brushColor,
-  onToggleDrawing,
-  onToggleEraser,
+  onSetDraw,
+  onSetErase,
   onChangeBrushSize,
   onChangeBrushColor,
   onApplyDrawingClick,
+  onCancelDrawingClick,
 }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
 
@@ -78,7 +82,6 @@ export default function Sidebar({
   // sekcja RYSOWANIE jest blokowana przy:
   // - AI
   // - przycinaniu
-  // (ale NIE przy samym rysowaniu, bo to własna sekcja)
   const lockDrawingSection = isAiActive || isCropActive;
 
   // sekcja CROP jest blokowana przy:
@@ -137,11 +140,12 @@ export default function Sidebar({
             drawingMode={drawingMode}
             brushSize={brushSize}
             brushColor={brushColor}
-            onToggleDrawing={onToggleDrawing}
-            onToggleEraser={onToggleEraser}
+            onSetDraw={onSetDraw}
+            onSetErase={onSetErase}
+            onApplyDrawingClick={onApplyDrawingClick}
+            onCancelDrawingClick={onCancelDrawingClick}
             onChangeBrushSize={onChangeBrushSize}
             onChangeBrushColor={onChangeBrushColor}
-            onApplyDrawingClick={onApplyDrawingClick}
           />
         </div>
 

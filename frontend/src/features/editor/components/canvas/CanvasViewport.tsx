@@ -5,9 +5,7 @@ import {
   useImperativeHandle,
   forwardRef,
 } from "react";
-import type {
-  DragEvent,
-} from "react";
+import type { DragEvent } from "react";
 import type { Filters, CropRect } from "@/features/editor/types";
 import { buildCssFilter } from "@/features/editor/types";
 import { CropOverlay } from "./CropOverlay";
@@ -34,6 +32,7 @@ type Props = {
 
 export type CanvasViewportHandle = {
   applyDrawing: () => void;
+  cancelDrawing: () => void;
 };
 
 export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
@@ -65,13 +64,13 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
       handlePointerMove,
       handlePointerUp,
       applyDrawing: applyDrawingInternal,
+      clearDrawing,
     } = useDrawingCanvas({
       drawingMode,
       brushSize,
       brushColor,
       cropEnabled,
     });
-
 
     const onDrop = useCallback(
       (e: DragEvent<HTMLDivElement>) => {
@@ -88,8 +87,13 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
       applyDrawingInternal(cssFilter, onApplyDrawing);
     };
 
+    const cancelDrawing = () => {
+      clearDrawing();
+    };
+
     useImperativeHandle(ref, () => ({
       applyDrawing,
+      cancelDrawing,
     }));
 
     return (

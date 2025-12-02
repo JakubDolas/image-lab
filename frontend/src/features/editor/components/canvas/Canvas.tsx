@@ -27,6 +27,7 @@ type Props = {
 
 export type CanvasHandle = {
   applyDrawing: () => void;
+  cancelDrawing: () => void;
 };
 
 const MIN_ZOOM = 0.5;
@@ -68,6 +69,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
   useImperativeHandle(ref, () => ({
     applyDrawing() {
       viewportRef.current?.applyDrawing();
+    },
+    cancelDrawing() {
+      viewportRef.current?.cancelDrawing();
     },
   }));
 

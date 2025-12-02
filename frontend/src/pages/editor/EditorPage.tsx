@@ -54,21 +54,22 @@ export default function EditorPage() {
     return <EditorEmptyState onPickFile={onPickFile} />;
   }
 
-  const handleToggleDrawing = () => {
-    setDrawingMode(drawingMode === "off" ? "draw" : "off");
+  const handleSetDraw = () => {
+    setDrawingMode("draw");
   };
 
-  const handleToggleEraser = () => {
-    if (drawingMode === "erase") {
-      setDrawingMode("draw");
-    } else {
-      setDrawingMode("erase");
-    }
+  const handleSetErase = () => {
+    setDrawingMode("erase");
   };
 
   const handleApplyDrawingClick = () => {
-    setDrawingMode("off");
     canvasRef.current?.applyDrawing();
+    setDrawingMode("off");
+  };
+
+  const handleCancelDrawingClick = () => {
+    canvasRef.current?.cancelDrawing?.();
+    setDrawingMode("off");
   };
 
   return (
@@ -89,11 +90,12 @@ export default function EditorPage() {
           drawingMode={drawingMode}
           brushSize={brushSize}
           brushColor={brushColor}
-          onToggleDrawing={handleToggleDrawing}
-          onToggleEraser={handleToggleEraser}
+          onSetDraw={handleSetDraw}
+          onSetErase={handleSetErase}
           onChangeBrushSize={setBrushSize}
           onChangeBrushColor={setBrushColor}
           onApplyDrawingClick={handleApplyDrawingClick}
+          onCancelDrawingClick={handleCancelDrawingClick}
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
