@@ -65,7 +65,27 @@ export default function Sidebar({
       return next;
     });
 
-  const toolsLocked = drawingMode !== "off";
+  const isDrawingActive = drawingMode !== "off";
+  const isCropActive = cropEnabled;
+  const isAiActive = busy;
+
+  // sekcje inne niż rysowanie & crop są blokowane przy:
+  // - AI
+  // - rysowaniu
+  // - przycinaniu
+  const lockOtherSections = isAiActive || isDrawingActive || isCropActive;
+
+  // sekcja RYSOWANIE jest blokowana przy:
+  // - AI
+  // - przycinaniu
+  // (ale NIE przy samym rysowaniu, bo to własna sekcja)
+  const lockDrawingSection = isAiActive || isCropActive;
+
+  // sekcja CROP jest blokowana przy:
+  // - AI
+  // - rysowaniu
+  // (ale NIE przy samym cropEnabled, żeby Apply/Cancel działały)
+  const lockCropSection = isAiActive || isDrawingActive;
 
   return (
     <aside
@@ -79,7 +99,8 @@ export default function Sidebar({
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        {/* AI */}
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <AiSection
             busy={busy}
             onRemoveBg={onRemoveBg}
@@ -89,7 +110,7 @@ export default function Sidebar({
           />
         </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <ColorSection
             filters={filters}
             setFilters={setFilters}
@@ -99,7 +120,7 @@ export default function Sidebar({
           />
         </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <EffectsSection
             filters={filters}
             setFilters={setFilters}
@@ -109,20 +130,22 @@ export default function Sidebar({
           />
         </div>
 
-        <DrawingSection
-          openIds={openIds}
-          toggle={toggle}
-          drawingMode={drawingMode}
-          brushSize={brushSize}
-          brushColor={brushColor}
-          onToggleDrawing={onToggleDrawing}
-          onToggleEraser={onToggleEraser}
-          onChangeBrushSize={onChangeBrushSize}
-          onChangeBrushColor={onChangeBrushColor}
-          onApplyDrawingClick={onApplyDrawingClick}
-        />
+        <div className={lockDrawingSection ? "opacity-60 pointer-events-none" : ""}>
+          <DrawingSection
+            openIds={openIds}
+            toggle={toggle}
+            drawingMode={drawingMode}
+            brushSize={brushSize}
+            brushColor={brushColor}
+            onToggleDrawing={onToggleDrawing}
+            onToggleEraser={onToggleEraser}
+            onChangeBrushSize={onChangeBrushSize}
+            onChangeBrushColor={onChangeBrushColor}
+            onApplyDrawingClick={onApplyDrawingClick}
+          />
+        </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockCropSection ? "opacity-60 pointer-events-none" : ""}>
           <CropSection
             busy={busy}
             cropEnabled={cropEnabled}
@@ -134,7 +157,7 @@ export default function Sidebar({
           />
         </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
             <button
               type="button"

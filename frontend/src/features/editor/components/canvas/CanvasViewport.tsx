@@ -123,7 +123,7 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
                 ease-out
               "
               style={{
-                width: `${zoom * 100}%`,
+                width: zoom > 1 ? `${zoom * 100}%` : undefined,
                 maxWidth: zoom <= 1 ? "100%" : undefined,
               }}
             >
