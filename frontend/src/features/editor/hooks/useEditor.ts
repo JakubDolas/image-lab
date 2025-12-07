@@ -11,6 +11,7 @@ import { downloadSingleImage } from "@/features/editor/api/download";
 
 type Step = {
   blob: Blob;
+  filters: Filters;
 };
 
 export type ImageSize = {
@@ -64,11 +65,9 @@ export function useEditor() {
 
   const [cropEnabled, setCropEnabled] = useState(false);
   const [cropRect, setCropRect] = useState<CropRect | null>(null);
-
   const [imageSize, setImageSize] = useState<ImageSize>(null);
 
   type DrawingMode = "off" | "draw" | "erase";
-
   const [drawingMode, setDrawingMode] = useState<DrawingMode>("off");
   const [brushSize, setBrushSize] = useState(5);
   const [brushColor, setBrushColor] = useState("#ff0000");
@@ -79,17 +78,39 @@ export function useEditor() {
   );
 
   const pushStep = useCallback(
-    (blob: Blob) => {
-      setSteps((prev) => [...prev.slice(0, ptr + 1), { blob }]);
+    (blob: Blob, newFilters: Filters = DEFAULT_FILTERS) => {
+      setSteps((prev) => [
+        ...prev.slice(0, ptr + 1),
+        { blob, filters: newFilters },
+      ]);
       setPtr((p) => p + 1);
+      setFilters(newFilters);
     },
     [ptr]
   );
 
+  const saveFilterState = useCallback(() => {
+    if (!current) return;
+    const filtersChanged = JSON.stringify(current.filters) !== JSON.stringify(filters);
+
+    if (filtersChanged) {
+      setSteps((prev) => [
+        ...prev.slice(0, ptr + 1),
+        { blob: current.blob, filters: { ...filters } },
+      ]);
+      setPtr((p) => p + 1);
+    }
+  }, [current, filters, ptr]);
+
+  useEffect(() => {
+    if (current) {
+      setFilters(current.filters);
+    }
+  }, [current]);
+
   const onPickFile = useCallback(
     (file: File) => {
-      pushStep(file);
-      setFilters(DEFAULT_FILTERS);
+      pushStep(file, DEFAULT_FILTERS);
       setCropEnabled(false);
       setCropRect(null);
     },
@@ -112,8 +133,11 @@ export function useEditor() {
     if (!current) return;
     setBusy(true);
     try {
-      const blob = await removeBg(current.blob);
-      pushStep(blob);
+      const blobWithFilters = await applyFiltersToBlob(current.blob, filters);
+      
+      const resultBlob = await removeBg(blobWithFilters);
+      
+      pushStep(resultBlob, DEFAULT_FILTERS);
     } finally {
       setBusy(false);
     }
@@ -123,8 +147,11 @@ export function useEditor() {
     if (!current) return;
     setBusy(true);
     try {
-      const blob = await upscaleImage(current.blob);
-      pushStep(blob);
+      const blobWithFilters = await applyFiltersToBlob(current.blob, filters);
+
+      const resultBlob = await upscaleImage(blobWithFilters);
+
+      pushStep(resultBlob, DEFAULT_FILTERS);
     } finally {
       setBusy(false);
     }
@@ -172,8 +199,7 @@ export function useEditor() {
         canvas.toBlob((b) => resolve(b), "image/png")
       );
       if (blob) {
-        pushStep(blob);
-        setFilters(DEFAULT_FILTERS);
+        pushStep(blob, DEFAULT_FILTERS);
       }
     } finally {
       setBusy(false);
@@ -187,7 +213,6 @@ export function useEditor() {
     setBusy(true);
     try {
       const filteredBlob = await applyFiltersToBlob(current.blob, filters);
-
       const zipBlob = await downloadSingleImage(filteredBlob, format, quality);
 
       const url = URL.createObjectURL(zipBlob);
@@ -249,7 +274,10 @@ export function useEditor() {
     },
     actions: {
       setFilters,
-      resetFilters: () => setFilters(DEFAULT_FILTERS),
+      resetFilters: () => {
+         pushStep(current ? current.blob : new Blob(), DEFAULT_FILTERS);
+      },
+      saveFilterState,
       onPickFile,
       onUndo,
       onRedo,
@@ -265,9 +293,7 @@ export function useEditor() {
       setBrushSize,
       setBrushColor,
       onApplyDrawing: (blob: Blob) => {
-        pushStep(blob);
-        setFilters(DEFAULT_FILTERS);
-
+        pushStep(blob, DEFAULT_FILTERS);
       },
     },
   };

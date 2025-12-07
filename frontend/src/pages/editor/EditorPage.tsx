@@ -26,6 +26,7 @@ export default function EditorPage() {
     actions: {
       setFilters,
       resetFilters,
+      saveFilterState,
       onPickFile,
       onUndo,
       onRedo,
@@ -72,6 +73,8 @@ export default function EditorPage() {
     setDrawingMode("off");
   };
 
+  const isModeActive = cropEnabled || drawingMode !== "off";
+
   return (
     <div className="mx-auto max-w-[1300px]">
       <div className="flex gap-4">
@@ -82,6 +85,7 @@ export default function EditorPage() {
           onPickOther={pickOther}
           filters={filters}
           setFilters={setFilters}
+          onSaveHistory={saveFilterState}
           onResetFilters={resetFilters}
           cropEnabled={cropEnabled}
           onStartCrop={handleStartCrop}
@@ -100,7 +104,7 @@ export default function EditorPage() {
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <Toolbar
-            busy={busy}
+            busy={busy || isModeActive}
             canUndo={canUndo}
             canRedo={canRedo}
             onUndo={onUndo}

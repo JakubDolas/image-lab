@@ -12,11 +12,11 @@ type Props = {
   busy: boolean;
   onRemoveBg: () => void;
   onUpscale: () => void;
-
   onPickOther: () => void;
 
   filters: Filters;
   setFilters: (f: Filters) => void;
+  onSaveHistory: () => void;
   onResetFilters: () => void;
 
   cropEnabled: boolean;
@@ -27,13 +27,10 @@ type Props = {
   drawingMode: "off" | "draw" | "erase";
   brushSize: number;
   brushColor: string;
-
   onSetDraw: () => void;
   onSetErase: () => void;
-
   onChangeBrushSize: (v: number) => void;
   onChangeBrushColor: (v: string) => void;
-
   onApplyDrawingClick: () => void;
   onCancelDrawingClick: () => void;
 };
@@ -45,6 +42,7 @@ export default function Sidebar({
   onPickOther,
   filters,
   setFilters,
+  onSaveHistory,
   onResetFilters,
   cropEnabled,
   onStartCrop,
@@ -73,36 +71,17 @@ export default function Sidebar({
   const isCropActive = cropEnabled;
   const isAiActive = busy;
 
-  // sekcje inne niż rysowanie & crop są blokowane przy:
-  // - AI
-  // - rysowaniu
-  // - przycinaniu
   const lockOtherSections = isAiActive || isDrawingActive || isCropActive;
-
-  // sekcja RYSOWANIE jest blokowana przy:
-  // - AI
-  // - przycinaniu
   const lockDrawingSection = isAiActive || isCropActive;
-
-  // sekcja CROP jest blokowana przy:
-  // - AI
-  // - rysowaniu
-  // (ale NIE przy samym cropEnabled, żeby Apply/Cancel działały)
   const lockCropSection = isAiActive || isDrawingActive;
 
   return (
-    <aside
-      className="
-        w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10
-        bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar
-      "
-    >
+    <aside className="w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
       <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-slate-400">
         Narzędzia
       </div>
 
       <div className="flex flex-col gap-2">
-        {/* AI */}
         <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <AiSection
             busy={busy}
@@ -117,6 +96,7 @@ export default function Sidebar({
           <ColorSection
             filters={filters}
             setFilters={setFilters}
+            onSaveHistory={onSaveHistory}
             onResetFilters={onResetFilters}
             openIds={openIds}
             toggle={toggle}
@@ -127,6 +107,7 @@ export default function Sidebar({
           <EffectsSection
             filters={filters}
             setFilters={setFilters}
+            onSaveHistory={onSaveHistory}
             onResetFilters={onResetFilters}
             openIds={openIds}
             toggle={toggle}
