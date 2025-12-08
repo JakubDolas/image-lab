@@ -21,7 +21,6 @@ type Props = {
   drawingMode: "off" | "draw" | "erase";
   brushSize: number;
   brushColor: string;
-
   onApplyDrawing: (blob: Blob) => void;
 };
 
@@ -30,9 +29,9 @@ export type CanvasHandle = {
   cancelDrawing: () => void;
 };
 
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 4;
-const STEP_ZOOM = 0.25;
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 5.0;
+const STEP_ZOOM = 0.15;
 
 const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
   {
@@ -76,7 +75,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
   }));
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 h-full w-full overflow-hidden bg-slate-900/50">
       <CanvasViewport
         ref={viewportRef}
         imageUrl={imageUrl}
