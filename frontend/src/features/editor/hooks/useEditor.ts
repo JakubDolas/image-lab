@@ -45,13 +45,19 @@ async function applyFiltersToBlob(
   ctx.filter = buildCssFilter(filters);
   ctx.drawImage(img, 0, 0);
 
+  const mime =
+    blob.type === "image/jpeg" || blob.type === "image/png"
+      ? blob.type
+      : "image/png";
+
   const outBlob: Blob | null = await new Promise((resolve) =>
-    canvas.toBlob((b) => resolve(b), "image/png")
+    canvas.toBlob((b) => resolve(b), mime)
   );
 
   URL.revokeObjectURL(url);
   return outBlob ?? blob;
 }
+
 
 export function useEditor() {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -71,6 +77,25 @@ export function useEditor() {
   const [drawingMode, setDrawingMode] = useState<DrawingMode>("off");
   const [brushSize, setBrushSize] = useState(5);
   const [brushColor, setBrushColor] = useState("#ff0000");
+
+  const [historyItems, setHistoryItems] = useState<string[]>([]);
+
+  const [colorSpace, setColorSpace] = useState<string>("RGB");
+
+  const addHistory = useCallback(
+    (label: string, dedupeLast: boolean = false) => {
+      setHistoryItems((prev) => {
+        const base = prev.slice(0, ptr + 1);
+
+        if (dedupeLast && base[base.length - 1] === label) {
+          return base;
+        }
+
+        return [...base, label];
+      });
+    },
+    [ptr]
+  );
 
   const imageUrl = useMemo(
     () => (current ? URL.createObjectURL(current.blob) : null),
@@ -99,8 +124,9 @@ export function useEditor() {
         { blob: current.blob, filters: { ...filters } },
       ]);
       setPtr((p) => p + 1);
+      addHistory("Zmieniono kolor ustawienia kolorów/efektów", true)
     }
-  }, [current, filters, ptr]);
+  }, [current, filters, ptr, addHistory]);
 
   useEffect(() => {
     if (current) {
@@ -113,8 +139,11 @@ export function useEditor() {
       pushStep(file, DEFAULT_FILTERS);
       setCropEnabled(false);
       setCropRect(null);
+
+      setHistoryItems([])
+      addHistory("Załadowano obraz")
     },
-    [pushStep]
+    [pushStep, addHistory]
   );
 
   const onUndo = () => {
@@ -138,6 +167,7 @@ export function useEditor() {
       const resultBlob = await removeBg(blobWithFilters);
       
       pushStep(resultBlob, DEFAULT_FILTERS);
+      addHistory("Usunięto tło")
     } finally {
       setBusy(false);
     }
@@ -152,6 +182,7 @@ export function useEditor() {
       const resultBlob = await upscaleImage(blobWithFilters);
 
       pushStep(resultBlob, DEFAULT_FILTERS);
+      addHistory("Powiększono obraz (upscale)")
     } finally {
       setBusy(false);
     }
@@ -200,6 +231,7 @@ export function useEditor() {
       );
       if (blob) {
         pushStep(blob, DEFAULT_FILTERS);
+        addHistory("Przycięto obraz")
       }
     } finally {
       setBusy(false);
@@ -221,9 +253,57 @@ export function useEditor() {
       a.download = `image_${format}.zip`;
       a.click();
       URL.revokeObjectURL(url);
+      addHistory(`Pobrano obraz (${format.toUpperCase()}, ${quality}%)`);
     } finally {
       setBusy(false);
     }
+  };
+
+  const detectColorSpace = async (blob: Blob): Promise<string> => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = url;
+
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = reject;
+    });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      return "RGB";
+    }
+
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    let isGrayscale = true;
+
+    for (let i = 0; i < imageData.length; i += 4) {
+      const r = imageData[i];
+      const g = imageData[i + 1];
+      const b = imageData[i + 2];
+
+      if (r !== g || g !== b) {
+        isGrayscale = false;
+        break;
+      }
+    }
+
+    URL.revokeObjectURL(url);
+
+    if (isGrayscale) return "Grayscale";
+
+    if (blob.type === "image/jpeg" || blob.type === "image/jpg") {
+      return "RGB / CMYK?";
+    }
+
+    return "RGB";
   };
 
   const updateImageSize = useCallback(async (blob: Blob) => {
@@ -249,12 +329,18 @@ export function useEditor() {
   }, []);
 
   useEffect(() => {
-    if (current) {
-      updateImageSize(current.blob);
-    } else {
+    if (!current) {
       setImageSize(null);
+      setColorSpace("RGB");
+      return;
     }
+
+    updateImageSize(current.blob);
+
+    detectColorSpace(current.blob).then(setColorSpace);
   }, [current, updateImageSize]);
+
+  const visibleHistoryItems = historyItems.slice(0, ptr + 1);
 
   return {
     ref: { inputRef },
@@ -271,12 +357,17 @@ export function useEditor() {
       drawingMode,
       brushSize,
       brushColor,
+      historyItems: visibleHistoryItems,
+      colorSpace
     },
     actions: {
       setFilters,
       resetFilters: () => {
-         pushStep(current ? current.blob : new Blob(), DEFAULT_FILTERS);
+        if (!current) return;
+        pushStep(current.blob, DEFAULT_FILTERS);
+        addHistory("Zresetowano filtry");
       },
+
       saveFilterState,
       onPickFile,
       onUndo,
@@ -294,6 +385,7 @@ export function useEditor() {
       setBrushColor,
       onApplyDrawing: (blob: Blob) => {
         pushStep(blob, DEFAULT_FILTERS);
+        addHistory("Zastosowano rysowanie po obrazie")
       },
     },
   };

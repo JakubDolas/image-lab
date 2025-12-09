@@ -5,8 +5,9 @@ import AiSection from "./AiSection";
 import ColorSection from "./ColorSection";
 import EffectsSection from "./EffectsSection";
 import CropSection from "./CropSection";
-import SectionShell from "./SectionShell";
 import DrawingSection from "./DrawingSection";
+import HistoryPanel from "./HistoryPanel";
+import ImageInfoPanel, { type ImageInfo } from "./ImageInfoPanel";
 
 type Props = {
   busy: boolean;
@@ -33,13 +34,16 @@ type Props = {
   onChangeBrushColor: (v: string) => void;
   onApplyDrawingClick: () => void;
   onCancelDrawingClick: () => void;
+  
+  historyItems: string[];
+  imageInfo: ImageInfo | null;
+
 };
 
 export default function Sidebar({
   busy,
   onRemoveBg,
   onUpscale,
-  onPickOther,
   filters,
   setFilters,
   onSaveHistory,
@@ -57,6 +61,8 @@ export default function Sidebar({
   onChangeBrushColor,
   onApplyDrawingClick,
   onCancelDrawingClick,
+  historyItems,
+  imageInfo,
 }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
 
@@ -76,7 +82,7 @@ export default function Sidebar({
   const lockCropSection = isAiActive || isDrawingActive;
 
   return (
-    <aside className="w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
+    <aside className="w-[260px] h-[83vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
       <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-slate-400">
         Narzędzia
       </div>
@@ -141,18 +147,8 @@ export default function Sidebar({
             toggle={toggle}
           />
         </div>
-
-        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
-          <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
-            <button
-              type="button"
-              onClick={onPickOther}
-              className="h-9 w-full rounded-xl border border-white/10 bg-white/10 px-3 text-sm hover:bg-white/15"
-            >
-              Wybierz inne zdjęcie
-            </button>
-          </SectionShell>
-        </div>
+        <HistoryPanel items={historyItems} />
+        <ImageInfoPanel info={imageInfo} />
       </div>
     </aside>
   );

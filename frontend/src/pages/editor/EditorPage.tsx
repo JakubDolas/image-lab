@@ -22,6 +22,8 @@ export default function EditorPage() {
       drawingMode,
       brushSize,
       brushColor,
+      historyItems,
+      colorSpace
     },
     actions: {
       setFilters,
@@ -78,7 +80,7 @@ export default function EditorPage() {
   return (
     <div className="mx-auto max-w-[1300px]">
       <div className="flex gap-4">
-        <Sidebar
+                <Sidebar
           busy={busy}
           onRemoveBg={onRemoveBg}
           onUpscale={onUpscale}
@@ -100,6 +102,23 @@ export default function EditorPage() {
           onChangeBrushColor={setBrushColor}
           onApplyDrawingClick={handleApplyDrawingClick}
           onCancelDrawingClick={handleCancelDrawingClick}
+          historyItems={historyItems}
+          imageInfo={
+            imageSize && current
+              ? {
+                  width: imageSize.width,
+                  height: imageSize.height,
+                  format:
+                    current.blob.type === "image/jpeg"
+                      ? "JPG"
+                      : current.blob.type === "image/png"
+                      ? "PNG"
+                      : "Obraz",
+                  sizeBytes: current.blob.size,
+                  colorSpace: colorSpace,
+                }
+              : null
+          }
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
