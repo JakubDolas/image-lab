@@ -1,12 +1,12 @@
 import {
-  useCallback,
-  useMemo,
   useRef,
   useImperativeHandle,
   forwardRef,
-} from "react";
-import type {
-  DragEvent,
+  useMemo,
+  useCallback,
+  useState,
+  type DragEvent,
+  type SyntheticEvent,
 } from "react";
 import type { Filters, CropRect } from "@/features/editor/types";
 import { buildCssFilter } from "@/features/editor/types";
@@ -34,6 +34,7 @@ type Props = {
 
 export type CanvasViewportHandle = {
   applyDrawing: () => void;
+  cancelDrawing: () => void;
 };
 
 export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
@@ -51,27 +52,31 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
       brushSize,
       brushColor,
       onApplyDrawing,
-    }: Props,
+    },
     ref
   ) {
     const inputRef = useRef<HTMLInputElement | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const [imgDim, setImgDim] = useState<{ w: number; h: number } | null>(null);
+    const [baseScale, setBaseScale] = useState(1);
 
     const {
       imgRef,
       drawCanvasRef,
       drawingActive,
-      handleImageLoad,
+      handleImageLoad: handleImageLoadInternal,
       handlePointerDown,
       handlePointerMove,
       handlePointerUp,
       applyDrawing: applyDrawingInternal,
+      clearDrawing,
     } = useDrawingCanvas({
       drawingMode,
       brushSize,
       brushColor,
       cropEnabled,
     });
-
 
     const onDrop = useCallback(
       (e: DragEvent<HTMLDivElement>) => {
@@ -82,92 +87,113 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
       [onPickFile]
     );
 
+    const onImageLoad = (e: SyntheticEvent<HTMLImageElement>) => {
+      const el = e.currentTarget;
+      const natW = el.naturalWidth;
+      const natH = el.naturalHeight;
+
+      setImgDim({ w: natW, h: natH });
+
+      if (containerRef.current && natW > 0 && natH > 0) {
+        const cw = containerRef.current.clientWidth;
+        const ch = containerRef.current.clientHeight;
+
+        if (cw > 0 && ch > 0) {
+          const scaleToFit = Math.min(cw / natW, ch / natH);
+
+          setBaseScale(scaleToFit < 1 ? scaleToFit : 1);
+        } else {
+          setBaseScale(1);
+        }
+      } else {
+        setBaseScale(1);
+      }
+
+      handleImageLoadInternal();
+    };
+
     const cssFilter = useMemo(() => buildCssFilter(filters), [filters]);
 
     const applyDrawing = () => {
       applyDrawingInternal(cssFilter, onApplyDrawing);
     };
 
+    const cancelDrawing = () => {
+      clearDrawing();
+    };
+
     useImperativeHandle(ref, () => ({
       applyDrawing,
+      cancelDrawing,
     }));
+
+    const effectiveScale = baseScale * zoom;
 
     return (
       <div
+        ref={containerRef}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
         className="
           relative
-          h-[72vh]
+          h-[78vh] w-full
           rounded-2xl
           border-2 border-dashed border-white/10
           bg-black/20
           overflow-auto
+          grid place-items-center
           nice-scrollbar
         "
       >
         {imageUrl ? (
           <div
-            className={
-              zoom <= 1
-                ? "flex h-full items-center justify-center"
-                : "block"
-            }
+            className="relative transition-all duration-300 ease-out"
+            style={{
+              width: imgDim ? imgDim.w * effectiveScale : "auto",
+              height: imgDim ? imgDim.h * effectiveScale : "auto",
+              opacity: imgDim ? 1 : 0,
+            }}
           >
-            <div
-              className="
-                relative
-                mx-auto
-                transition-all
-                duration-300
-                ease-out
-              "
+            <img
+              ref={imgRef}
+              src={imageUrl}
+              draggable={false}
+              alt="Edytowany obraz"
+              style={{ filter: cssFilter }}
+              className="block w-full h-full object-contain shadow-2xl rounded-lg"
+              onLoad={onImageLoad}
+            />
+
+            {cropEnabled && (
+              <CropOverlay rect={cropRect} onChange={onChangeCropRect} />
+            )}
+
+            <canvas
+              ref={drawCanvasRef}
+              className="absolute inset-0 rounded-lg touch-none"
               style={{
-                width: `${zoom * 100}%`,
-                maxWidth: zoom <= 1 ? "100%" : undefined,
+                width: "100%",
+                height: "100%",
+                pointerEvents: drawingActive ? "auto" : "none",
+                cursor: drawingActive
+                  ? drawingMode === "erase"
+                    ? "cell"
+                    : "crosshair"
+                  : "default",
               }}
-            >
-              <img
-                ref={imgRef}
-                src={imageUrl}
-                draggable={false}
-                style={{ filter: cssFilter }}
-                className={
-                  "block w-full h-auto rounded-lg object-contain " +
-                  (zoom <= 1 ? "max-h-[72vh]" : "")
-                }
-                onLoad={handleImageLoad}
-              />
-
-              {cropEnabled && (
-                <CropOverlay rect={cropRect} onChange={onChangeCropRect} />
-              )}
-
-              <canvas
-                ref={drawCanvasRef}
-                className="absolute inset-0 rounded-lg"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  pointerEvents: drawingActive ? "auto" : "none",
-                  cursor: drawingActive
-                    ? drawingMode === "erase"
-                      ? "cell"
-                      : "crosshair"
-                    : "default",
-                }}
-                onMouseDown={handlePointerDown}
-                onMouseMove={handlePointerMove}
-                onMouseUp={handlePointerUp}
-                onMouseLeave={handlePointerUp}
-              />
-            </div>
+              onMouseDown={handlePointerDown}
+              onMouseMove={handlePointerMove}
+              onMouseUp={handlePointerUp}
+              onMouseLeave={handlePointerUp}
+            />
           </div>
         ) : (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-sm text-slate-400">
-            Przeciągnij obraz tutaj albo{" "}
+          <div className="text-center">
+            <div className="text-sm text-slate-400 mb-2">
+              Przeciągnij obraz tutaj albo
+            </div>
             <button
-              className="text-indigo-300 underline underline-offset-2"
+              className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4 font-medium transition-colors"
               onClick={() => inputRef.current?.click()}
               type="button"
             >
@@ -199,6 +225,7 @@ export const CanvasViewport = forwardRef<CanvasViewportHandle, Props>(
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) onPickFile(f);
+            e.currentTarget.value = "";
           }}
         />
       </div>

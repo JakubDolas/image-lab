@@ -5,18 +5,19 @@ import AiSection from "./AiSection";
 import ColorSection from "./ColorSection";
 import EffectsSection from "./EffectsSection";
 import CropSection from "./CropSection";
-import SectionShell from "./SectionShell";
 import DrawingSection from "./DrawingSection";
+import HistoryPanel from "./HistoryPanel";
+import ImageInfoPanel, { type ImageInfo } from "./ImageInfoPanel";
 
 type Props = {
   busy: boolean;
   onRemoveBg: () => void;
   onUpscale: () => void;
-
   onPickOther: () => void;
 
   filters: Filters;
   setFilters: (f: Filters) => void;
+  onSaveHistory: () => void;
   onResetFilters: () => void;
 
   cropEnabled: boolean;
@@ -27,21 +28,25 @@ type Props = {
   drawingMode: "off" | "draw" | "erase";
   brushSize: number;
   brushColor: string;
-  onToggleDrawing: () => void;
-  onToggleEraser: () => void;
+  onSetDraw: () => void;
+  onSetErase: () => void;
   onChangeBrushSize: (v: number) => void;
   onChangeBrushColor: (v: string) => void;
-
   onApplyDrawingClick: () => void;
+  onCancelDrawingClick: () => void;
+  
+  historyItems: string[];
+  imageInfo: ImageInfo | null;
+
 };
 
 export default function Sidebar({
   busy,
   onRemoveBg,
   onUpscale,
-  onPickOther,
   filters,
   setFilters,
+  onSaveHistory,
   onResetFilters,
   cropEnabled,
   onStartCrop,
@@ -50,11 +55,14 @@ export default function Sidebar({
   drawingMode,
   brushSize,
   brushColor,
-  onToggleDrawing,
-  onToggleEraser,
+  onSetDraw,
+  onSetErase,
   onChangeBrushSize,
   onChangeBrushColor,
   onApplyDrawingClick,
+  onCancelDrawingClick,
+  historyItems,
+  imageInfo,
 }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
 
@@ -65,21 +73,22 @@ export default function Sidebar({
       return next;
     });
 
-  const toolsLocked = drawingMode !== "off";
+  const isDrawingActive = drawingMode !== "off";
+  const isCropActive = cropEnabled;
+  const isAiActive = busy;
+
+  const lockOtherSections = isAiActive || isDrawingActive || isCropActive;
+  const lockDrawingSection = isAiActive || isCropActive;
+  const lockCropSection = isAiActive || isDrawingActive;
 
   return (
-    <aside
-      className="
-        w-[260px] h-[77vh] flex-shrink-0 rounded-2xl border border-white/10
-        bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar
-      "
-    >
+    <aside className="w-[260px] h-[83vh] flex-shrink-0 rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-3 overflow-y-auto pr-1 nice-scrollbar">
       <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-slate-400">
         Narzędzia
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <AiSection
             busy={busy}
             onRemoveBg={onRemoveBg}
@@ -89,40 +98,45 @@ export default function Sidebar({
           />
         </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <ColorSection
             filters={filters}
             setFilters={setFilters}
+            onSaveHistory={onSaveHistory}
             onResetFilters={onResetFilters}
             openIds={openIds}
             toggle={toggle}
           />
         </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockOtherSections ? "opacity-60 pointer-events-none" : ""}>
           <EffectsSection
             filters={filters}
             setFilters={setFilters}
+            onSaveHistory={onSaveHistory}
             onResetFilters={onResetFilters}
             openIds={openIds}
             toggle={toggle}
           />
         </div>
 
-        <DrawingSection
-          openIds={openIds}
-          toggle={toggle}
-          drawingMode={drawingMode}
-          brushSize={brushSize}
-          brushColor={brushColor}
-          onToggleDrawing={onToggleDrawing}
-          onToggleEraser={onToggleEraser}
-          onChangeBrushSize={onChangeBrushSize}
-          onChangeBrushColor={onChangeBrushColor}
-          onApplyDrawingClick={onApplyDrawingClick}
-        />
+        <div className={lockDrawingSection ? "opacity-60 pointer-events-none" : ""}>
+          <DrawingSection
+            openIds={openIds}
+            toggle={toggle}
+            drawingMode={drawingMode}
+            brushSize={brushSize}
+            brushColor={brushColor}
+            onSetDraw={onSetDraw}
+            onSetErase={onSetErase}
+            onApplyDrawingClick={onApplyDrawingClick}
+            onCancelDrawingClick={onCancelDrawingClick}
+            onChangeBrushSize={onChangeBrushSize}
+            onChangeBrushColor={onChangeBrushColor}
+          />
+        </div>
 
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
+        <div className={lockCropSection ? "opacity-60 pointer-events-none" : ""}>
           <CropSection
             busy={busy}
             cropEnabled={cropEnabled}
@@ -133,18 +147,8 @@ export default function Sidebar({
             toggle={toggle}
           />
         </div>
-
-        <div className={toolsLocked ? "opacity-60 pointer-events-none" : ""}>
-          <SectionShell id="file" title="Plik" openIds={openIds} toggle={toggle}>
-            <button
-              type="button"
-              onClick={onPickOther}
-              className="h-9 w-full rounded-xl border border-white/10 bg-white/10 px-3 text-sm hover:bg-white/15"
-            >
-              Wybierz inne zdjęcie
-            </button>
-          </SectionShell>
-        </div>
+        <HistoryPanel items={historyItems} />
+        <ImageInfoPanel info={imageInfo} />
       </div>
     </aside>
   );

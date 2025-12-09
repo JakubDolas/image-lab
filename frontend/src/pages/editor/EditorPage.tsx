@@ -22,10 +22,13 @@ export default function EditorPage() {
       drawingMode,
       brushSize,
       brushColor,
+      historyItems,
+      colorSpace
     },
     actions: {
       setFilters,
       resetFilters,
+      saveFilterState,
       onPickFile,
       onUndo,
       onRedo,
@@ -54,33 +57,37 @@ export default function EditorPage() {
     return <EditorEmptyState onPickFile={onPickFile} />;
   }
 
-  const handleToggleDrawing = () => {
-    setDrawingMode(drawingMode === "off" ? "draw" : "off");
+  const handleSetDraw = () => {
+    setDrawingMode("draw");
   };
 
-  const handleToggleEraser = () => {
-    if (drawingMode === "erase") {
-      setDrawingMode("draw");
-    } else {
-      setDrawingMode("erase");
-    }
+  const handleSetErase = () => {
+    setDrawingMode("erase");
   };
 
   const handleApplyDrawingClick = () => {
-    setDrawingMode("off");
     canvasRef.current?.applyDrawing();
+    setDrawingMode("off");
   };
+
+  const handleCancelDrawingClick = () => {
+    canvasRef.current?.cancelDrawing?.();
+    setDrawingMode("off");
+  };
+
+  const isModeActive = cropEnabled || drawingMode !== "off";
 
   return (
     <div className="mx-auto max-w-[1300px]">
       <div className="flex gap-4">
-        <Sidebar
+                <Sidebar
           busy={busy}
           onRemoveBg={onRemoveBg}
           onUpscale={onUpscale}
           onPickOther={pickOther}
           filters={filters}
           setFilters={setFilters}
+          onSaveHistory={saveFilterState}
           onResetFilters={resetFilters}
           cropEnabled={cropEnabled}
           onStartCrop={handleStartCrop}
@@ -89,16 +96,34 @@ export default function EditorPage() {
           drawingMode={drawingMode}
           brushSize={brushSize}
           brushColor={brushColor}
-          onToggleDrawing={handleToggleDrawing}
-          onToggleEraser={handleToggleEraser}
+          onSetDraw={handleSetDraw}
+          onSetErase={handleSetErase}
           onChangeBrushSize={setBrushSize}
           onChangeBrushColor={setBrushColor}
           onApplyDrawingClick={handleApplyDrawingClick}
+          onCancelDrawingClick={handleCancelDrawingClick}
+          historyItems={historyItems}
+          imageInfo={
+            imageSize && current
+              ? {
+                  width: imageSize.width,
+                  height: imageSize.height,
+                  format:
+                    current.blob.type === "image/jpeg"
+                      ? "JPG"
+                      : current.blob.type === "image/png"
+                      ? "PNG"
+                      : "Obraz",
+                  sizeBytes: current.blob.size,
+                  colorSpace: colorSpace,
+                }
+              : null
+          }
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <Toolbar
-            busy={busy}
+            busy={busy || isModeActive}
             canUndo={canUndo}
             canRedo={canRedo}
             onUndo={onUndo}

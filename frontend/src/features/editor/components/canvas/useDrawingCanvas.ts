@@ -1,29 +1,16 @@
-import { useRef, useState } from "react";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import {
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 
 type DrawingMode = "off" | "draw" | "erase";
 
-type Args = {
+type Config = {
   drawingMode: DrawingMode;
   brushSize: number;
   brushColor: string;
   cropEnabled: boolean;
-};
-
-type ApplyDrawingFn = (
-  baseFilter: string,
-  onApplyDrawing: (blob: Blob) => void
-) => void;
-
-export type UseDrawingCanvasResult = {
-  imgRef: React.RefObject<HTMLImageElement>;
-  drawCanvasRef: React.RefObject<HTMLCanvasElement>;
-  drawingActive: boolean;
-  handleImageLoad: () => void;
-  handlePointerDown: (e: ReactMouseEvent<HTMLCanvasElement>) => void;
-  handlePointerMove: (e: ReactMouseEvent<HTMLCanvasElement>) => void;
-  handlePointerUp: () => void;
-  applyDrawing: ApplyDrawingFn;
 };
 
 export function useDrawingCanvas({
@@ -31,13 +18,14 @@ export function useDrawingCanvas({
   brushSize,
   brushColor,
   cropEnabled,
-}: Args): UseDrawingCanvasResult {
-  const imgRef = useRef<HTMLImageElement>(null!);
-  const drawCanvasRef = useRef<HTMLCanvasElement>(null!);
+}: Config) {
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const drawCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
   const hasDrawnRef = useRef(false);
+
   const [imageReady, setImageReady] = useState(false);
 
   const handleImageLoad = () => {
@@ -45,10 +33,8 @@ export function useDrawingCanvas({
     const canvas = drawCanvasRef.current;
     if (!img || !canvas) return;
 
-    const { naturalWidth, naturalHeight } = img;
-
-    canvas.width = naturalWidth;
-    canvas.height = naturalHeight;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
 
     const ctx = canvas.getContext("2d");
     if (ctx) {
@@ -116,7 +102,10 @@ export function useDrawingCanvas({
     lastPointRef.current = null;
   };
 
-  const applyDrawing: ApplyDrawingFn = (baseFilter, onApplyDrawing) => {
+  const applyDrawing = (
+    cssFilter: string,
+    onApplyDrawing: (blob: Blob) => void
+  ) => {
     if (!hasDrawnRef.current) return;
 
     const img = imgRef.current;
@@ -133,7 +122,7 @@ export function useDrawingCanvas({
     const ctx = merged.getContext("2d");
     if (!ctx) return;
 
-    ctx.filter = baseFilter;
+    ctx.filter = cssFilter;
     ctx.drawImage(img, 0, 0, w, h);
 
     ctx.filter = "none";
@@ -152,6 +141,20 @@ export function useDrawingCanvas({
     }, "image/png");
   };
 
+  const clearDrawing = () => {
+    const overlay = drawCanvasRef.current;
+    if (!overlay) return;
+    const ctx = overlay.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+    hasDrawnRef.current = false;
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+  };
+
+
   const drawingActive =
     drawingMode !== "off" && !cropEnabled && imageReady;
 
@@ -164,5 +167,6 @@ export function useDrawingCanvas({
     handlePointerMove,
     handlePointerUp,
     applyDrawing,
+    clearDrawing,
   };
 }

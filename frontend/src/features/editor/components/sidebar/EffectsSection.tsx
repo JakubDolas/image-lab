@@ -5,6 +5,7 @@ import SectionShell from "./SectionShell";
 type Props = {
   filters: Filters;
   setFilters: (f: Filters) => void;
+  onSaveHistory: () => void;
   onResetFilters: () => void;
   openIds: Set<string>;
   toggle: (id: string) => void;
@@ -13,6 +14,7 @@ type Props = {
 export default function EffectsSection({
   filters,
   setFilters,
+  onSaveHistory,
   onResetFilters,
   openIds,
   toggle,
@@ -27,7 +29,11 @@ export default function EffectsSection({
       openIds={openIds}
       toggle={toggle}
     >
-      <div className="space-y-3">
+      <div 
+        className="space-y-3"
+        onPointerUp={onSaveHistory} 
+        onTouchEnd={onSaveHistory}
+      >
         <Range
           label="Sepia"
           min={0}
