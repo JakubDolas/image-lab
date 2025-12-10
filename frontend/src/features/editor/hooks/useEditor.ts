@@ -8,6 +8,7 @@ import {
 import { removeBg } from "@/features/editor/api/removeBg";
 import { upscaleImage } from "@/features/editor/api/upscale";
 import { downloadSingleImage } from "@/features/editor/api/download";
+import { convertToEditorPng } from "@/features/editor/api/convertToEditorPng";
 
 type Step = {
   blob: Blob;
@@ -82,6 +83,30 @@ export function useEditor() {
 
   const [colorSpace, setColorSpace] = useState<string>("RGB");
 
+  const [originalFormat, setOriginalFormat] = useState<string | null>(null);
+
+  const BROWSER_IMAGE_MIMES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/gif",
+    "image/bmp",
+    "image/x-icon",
+    "image/vnd.microsoft.icon",
+  ]);
+
+  const loadFileForEditor = useCallback(async (file: File): Promise<Blob> => {
+    const ext = file.name.split(".").pop()?.toUpperCase() ?? null;
+    setOriginalFormat(ext);
+
+    if (BROWSER_IMAGE_MIMES.has(file.type)) {
+      return file;
+    }
+
+    const converted = await convertToEditorPng(file);
+    return converted;
+  }, []);
+
   const addHistory = useCallback(
     (label: string, dedupeLast: boolean = false) => {
       setHistoryItems((prev) => {
@@ -135,16 +160,23 @@ export function useEditor() {
   }, [current]);
 
   const onPickFile = useCallback(
-    (file: File) => {
-      pushStep(file, DEFAULT_FILTERS);
-      setCropEnabled(false);
-      setCropRect(null);
+    async (file: File) => {
+      try {
+        const blobForEditor = await loadFileForEditor(file);
 
-      setHistoryItems([])
-      addHistory("Załadowano obraz")
+        pushStep(blobForEditor, DEFAULT_FILTERS);
+        setCropEnabled(false);
+        setCropRect(null);
+
+        setHistoryItems([]);
+        addHistory("Załadowano obraz");
+      } catch (err) {
+        console.error("Błąd wczytywania pliku:", err);
+      }
     },
-    [pushStep, addHistory]
+    [pushStep, loadFileForEditor, addHistory]
   );
+
 
   const onUndo = () => {
     if (ptr <= 0) return;
@@ -358,7 +390,8 @@ export function useEditor() {
       brushSize,
       brushColor,
       historyItems: visibleHistoryItems,
-      colorSpace
+      colorSpace,
+      originalFormat,
     },
     actions: {
       setFilters,

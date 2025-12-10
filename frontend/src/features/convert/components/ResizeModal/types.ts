@@ -1,7 +1,7 @@
 export type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
 export type ResizeModalProps = {
-  file: File;
+  file: Blob | File;
   initialWidth?: number | null;
   initialHeight?: number | null;
   keepAspectDefault?: boolean;

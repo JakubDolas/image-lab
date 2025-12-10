@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { convertZipCustom, type FileOption } from "@/features/convert/api";
+import { convertToEditorPng } from "@/features/editor/api/convertToEditorPng";
+import { BROWSER_IMAGE_MIMES } from "@/features/convert/components/lib/imageSupport";
 
 type Fmt = string;
 
 export function useConversionState() {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<FileEntry[]>([]);
   const [formats, setFormats] = useState<Record<number, Fmt>>({});
   const [quality, setQuality] = useState<Record<number, number>>({});
   const [sizes, setSizes] = useState<Record<number, { width: number | null; height: number | null }>>({});
@@ -12,6 +14,13 @@ export function useConversionState() {
   const [busy, setBusy] = useState(false);
   const [zipBlob, setZipBlob] = useState<Blob | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+
+  type FileEntry = {
+    file: File;
+    previewBlob: File | Blob;
+    originalFormat: string;
+  };
 
   // inicjalizacja domyślnych wartości przy dodaniu plików
   useEffect(() => {
@@ -40,8 +49,36 @@ export function useConversionState() {
 
   function addFiles(newFiles: File[]) {
     if (!newFiles.length) return;
-    setFiles((p) => [...p, ...newFiles]);
+
+    (async () => {
+      const entries: FileEntry[] = [];
+
+      for (const f of newFiles) {
+        const ext = f.name.split(".").pop()?.toLowerCase() ?? "unknown";
+
+        let previewBlob: File | Blob = f;
+
+        if (!BROWSER_IMAGE_MIMES.has(f.type)) {
+          try {
+            previewBlob = await convertToEditorPng(f);
+          } catch (err) {
+            console.error("Błąd konwersji podglądu:", err);
+            continue;
+          }
+        }
+
+        entries.push({
+          file: f,
+          previewBlob,
+          originalFormat: ext,
+        });
+      }
+
+      if (!entries.length) return;
+      setFiles((p) => [...p, ...entries]);
+    })();
   }
+
 
   function openAddDialog() {
     inputRef.current?.click();
@@ -73,6 +110,7 @@ export function useConversionState() {
     setSizes((p) => reindex(p));
   }
 
+
   async function start() {
     if (!files.length) return;
     setBusy(true);
@@ -88,7 +126,8 @@ export function useConversionState() {
         };
       });
       setZipBlob(null);
-      const blob = await convertZipCustom(files, opts);
+      const origFiles = files.map((entry) => entry.file);
+      const blob = await convertZipCustom(origFiles, opts);
       setZipBlob(blob);
     } finally {
       setBusy(false);

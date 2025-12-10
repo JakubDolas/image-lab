@@ -13,6 +13,7 @@ function extOf(file: File) {
 
 interface Props {
   file: File;
+  previewBlob: File | Blob;
   index: number;
   currentFormat: string;
   onPickFormat: (fmt: string) => void;
@@ -27,6 +28,7 @@ interface Props {
 
 export default function FileCard({
   file,
+  previewBlob,
   index,
   currentFormat,
   onPickFormat,
@@ -51,8 +53,7 @@ export default function FileCard({
       className="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-4"
     >
       <div className="flex items-center gap-4">
-        <Thumb file={file} />
-
+        <Thumb file={previewBlob as File} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[15px]">{file.name}</div>
           <div className="text-xs text-slate-400">
@@ -107,7 +108,7 @@ export default function FileCard({
 
       {resizeOpen && (
         <ResizeModal
-          file={file}
+          file={previewBlob}
           initialWidth={size?.width ?? undefined}
           initialHeight={size?.height ?? undefined}
           keepAspectDefault={true}
@@ -119,6 +120,7 @@ export default function FileCard({
           onClose={() => setResizeOpen(false)}
         />
       )}
+
 
     </motion.div>
   );

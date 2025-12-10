@@ -23,7 +23,8 @@ export default function EditorPage() {
       brushSize,
       brushColor,
       historyItems,
-      colorSpace
+      colorSpace,
+      originalFormat
     },
     actions: {
       setFilters,
@@ -108,12 +109,7 @@ export default function EditorPage() {
               ? {
                   width: imageSize.width,
                   height: imageSize.height,
-                  format:
-                    current.blob.type === "image/jpeg"
-                      ? "JPG"
-                      : current.blob.type === "image/png"
-                      ? "PNG"
-                      : "Obraz",
+                  format: originalFormat ?? "Nieznany",
                   sizeBytes: current.blob.size,
                   colorSpace: colorSpace,
                 }
