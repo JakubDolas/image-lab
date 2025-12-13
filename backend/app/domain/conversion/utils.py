@@ -23,11 +23,9 @@ _PLUGIN_MODULES = [
     "PIL.PpmImagePlugin",
     "PIL.SgiImagePlugin",
     "PIL.SpiderImagePlugin",
-    "PIL.SunImagePlugin",
     "PIL.TgaImagePlugin",
     "PIL.TiffImagePlugin",
     "PIL.WebPImagePlugin",
-    "PIL.XbmImagePlugin",
     "PIL.XpmImagePlugin",
 ]
 

@@ -13,8 +13,10 @@ export function useConversionState() {
 
   const [busy, setBusy] = useState(false);
   const [zipBlob, setZipBlob] = useState<Blob | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const [error, setError] = useState<string | null>(null);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   type FileEntry = {
     file: File;
@@ -22,15 +24,15 @@ export function useConversionState() {
     originalFormat: string;
   };
 
-  // inicjalizacja domyślnych wartości przy dodaniu plików
   useEffect(() => {
     setFormats((prev) => {
       const next = { ...prev };
       files.forEach((_, i) => {
-        if (!next[i]) next[i] = "webp"; // domyślnie webp
+        if (!next[i]) next[i] = "webp";
       });
       return next;
     });
+
     setQuality((prev) => {
       const next = { ...prev };
       files.forEach((_, i) => {
@@ -38,6 +40,7 @@ export function useConversionState() {
       });
       return next;
     });
+
     setSizes((prev) => {
       const next = { ...prev };
       files.forEach((_, i) => {
@@ -61,8 +64,10 @@ export function useConversionState() {
         if (!BROWSER_IMAGE_MIMES.has(f.type)) {
           try {
             previewBlob = await convertToEditorPng(f);
-          } catch (err) {
+          } catch (err: any) {
             console.error("Błąd konwersji podglądu:", err);
+
+            setError(`Nieobsługiwany format pliku: ${ext.toUpperCase()}`);
             continue;
           }
         }
@@ -79,7 +84,6 @@ export function useConversionState() {
     })();
   }
 
-
   function openAddDialog() {
     inputRef.current?.click();
   }
@@ -90,6 +94,7 @@ export function useConversionState() {
     setQuality({});
     setSizes({});
     setZipBlob(null);
+    setError(null);
   }
 
   function removeAt(i: number) {
@@ -110,10 +115,11 @@ export function useConversionState() {
     setSizes((p) => reindex(p));
   }
 
-
   async function start() {
     if (!files.length) return;
     setBusy(true);
+    setError(null);
+
     try {
       const opts: FileOption[] = files.map((_, i) => {
         const fmt = (formats[i] ?? "webp").toLowerCase();
@@ -125,10 +131,23 @@ export function useConversionState() {
           quality: fmt === "png" ? null : (quality[i] ?? 85),
         };
       });
+
       setZipBlob(null);
+
       const origFiles = files.map((entry) => entry.file);
+
       const blob = await convertZipCustom(origFiles, opts);
       setZipBlob(blob);
+
+    } catch (err: any) {
+      console.error(err);
+
+      if (err?.detail) {
+        setError(err.detail);
+      } else {
+        setError("Wystąpił błąd podczas konwersji.");
+      }
+
     } finally {
       setBusy(false);
     }
@@ -167,5 +186,8 @@ export function useConversionState() {
     download,
 
     inputRef,
+
+    error,
+    setError,
   };
 }

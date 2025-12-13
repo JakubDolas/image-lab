@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { getSupportedFormats } from "@/features/convert/api";
 
-type SupportedState = {
+type LoaderFn = () => Promise<{
   formats: string[];
-  preferredExt: Record<string, string>;
-  loading: boolean;
-  error: string | null;
-};
+  preferred_ext?: Record<string, string>;
+}>;
 
-export function useSupportedFormats(): SupportedState {
+export function useFormatsBase(
+  loadFn: LoaderFn,
+  blocked: string[]
+) {
   const [formats, setFormats] = useState<string[]>([]);
   const [preferredExt, setPreferredExt] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -19,15 +19,21 @@ export function useSupportedFormats(): SupportedState {
 
     (async () => {
       try {
-        const { formats, preferred_ext } = await getSupportedFormats();
+        setLoading(true);
+        const data = await loadFn();
         if (cancelled) return;
-        setFormats(formats || []);
-        setPreferredExt(preferred_ext || {});
+
+        const filtered = (data.formats || []).filter(
+          (f) => !blocked.includes(f.toLowerCase())
+        );
+
+        setFormats(filtered);
+        setPreferredExt(data.preferred_ext ?? {});
         setError(null);
-      } catch (e) {
+      } catch {
         if (cancelled) return;
-        setError("Nie udało się pobrać listy formatów.");
         setFormats([]);
+        setError("Nie udało się pobrać listy formatów.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -36,7 +42,7 @@ export function useSupportedFormats(): SupportedState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadFn, blocked]);
 
   return { formats, preferredExt, loading, error };
 }

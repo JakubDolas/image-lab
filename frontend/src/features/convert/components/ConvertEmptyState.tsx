@@ -1,15 +1,18 @@
 import type { RefObject } from "react";
 import UploadArea from "@/features/convert/components/UploadArea";
+import { ErrorAlert } from "@/features/convert/components/ErrorAlert";
 
 type Props = {
   addFiles: (files: File[]) => void;
   openAddDialog: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
+  error: string | null;
 };
 
-export function ConvertEmptyState({ addFiles, openAddDialog, inputRef }: Props) {
+export function ConvertEmptyState({ addFiles, openAddDialog, inputRef, error }: Props) {
   return (
     <div className="mx-auto max-w-[1200px] space-y-6">
+
       <div className="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.03)] p-4 sm:p-5">
         <ol className="space-y-2">
           {[
@@ -31,9 +34,9 @@ export function ConvertEmptyState({ addFiles, openAddDialog, inputRef }: Props) 
             </li>
           ))}
         </ol>
+
         <div className="mt-4 rounded-xl border border-white/10 bg-[rgba(255,255,255,0.03)] px-3 py-2 text-sm text-slate-300">
-          Wskazówka: przeciągnij kilka plików naraz, a potem ustaw docelowe formaty
-          zbiorczo.
+          Wskazówka: przeciągnij kilka plików naraz, a potem ustaw docelowe formaty zbiorczo.
         </div>
       </div>
 
@@ -43,14 +46,7 @@ export function ConvertEmptyState({ addFiles, openAddDialog, inputRef }: Props) 
         </div>
       </div>
 
-      <div className="mt-2">
-        <button
-          onClick={openAddDialog}
-          className="mt-3 rounded-xl border border-white/10 bg-indigo-500 px-3 py-2 text-white"
-        >
-          Dodaj pliki
-        </button>
-      </div>
+      <ErrorAlert message={error} />
 
       <p className="pt-8 text-center text-slate-400">Brak plików do wyświetlenia.</p>
 

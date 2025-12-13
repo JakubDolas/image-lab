@@ -24,7 +24,8 @@ export default function EditorPage() {
       brushColor,
       historyItems,
       colorSpace,
-      originalFormat
+      originalFormat,
+      error,
     },
     actions: {
       setFilters,
@@ -55,7 +56,7 @@ export default function EditorPage() {
   const canvasRef = useRef<CanvasHandle | null>(null);
 
   if (!current) {
-    return <EditorEmptyState onPickFile={onPickFile} />;
+    return <EditorEmptyState onPickFile={onPickFile} error={error} />;
   }
 
   const handleSetDraw = () => {
