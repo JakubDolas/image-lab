@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { ImageSize } from "../types/editorTypes";
 
 export function useImageMetadata(current: any) {
-  const [imageSize, setImageSize] = useState<ImageSize>(null);
+  const [imageSize, setImageSize] = useState<ImageSize | null>(null);
   const [colorSpace, setColorSpace] = useState("RGB");
 
   useEffect(() => {

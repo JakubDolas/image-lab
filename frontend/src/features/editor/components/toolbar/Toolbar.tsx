@@ -1,4 +1,4 @@
-import type { ImageSize } from "@/features/editor/hooks/useEditor";
+import type { ImageSize } from "@/features/editor/hooks/types/editorTypes";
 
 export default function Toolbar({
   canUndo,

@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import Canvas, { type CanvasHandle } from "@/features/editor/components/canvas/Canvas";
+import Canvas from "@/features/editor/components/canvas/Canvas";
+import type { CanvasHandle } 
+from "@/features/editor/components/canvas/canvas.types";
 import Sidebar from "@/features/editor/components/sidebar/Sidebar";
 import Toolbar from "@/features/editor/components/toolbar/Toolbar";
 import DownloadModal from "@/features/editor/components/toolbar/DownloadModal";

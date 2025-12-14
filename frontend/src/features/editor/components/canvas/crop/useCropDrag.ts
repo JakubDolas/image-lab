@@ -1,24 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import type { CropRect } from "@/features/editor/types";
+import type { DragKind, DragState } from "./crop.types";
 
-type OverlayProps = {
-  rect: CropRect | null;
-  onChange: (rect: CropRect) => void;
-};
-
-type DragKind = "move" | "nw" | "ne" | "sw" | "se";
-
-type DragState = {
-  kind: DragKind;
-  startX: number;
-  startY: number;
-  startRect: CropRect;
-  boxWidth: number;
-  boxHeight: number;
-};
-
-export function CropOverlay({ rect, onChange }: OverlayProps) {
+export function useCropDrag(
+  rect: CropRect | null,
+  onChange: (rect: CropRect) => void
+) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
 
@@ -102,34 +90,9 @@ export function CropOverlay({ rect, onChange }: OverlayProps) {
     height: `${current.height * 100}%`,
   };
 
-  return (
-    <div ref={containerRef} className="pointer-events-none absolute inset-0">
-      <div
-        className="pointer-events-auto absolute rounded-lg border-2 border-indigo-400 bg-black/20 shadow-[0_0_0_10000px_rgba(0,0,0,0.35)]"
-        style={style}
-        onMouseDown={beginDrag("move")}
-      >
-        {(["nw", "ne", "sw", "se"] as DragKind[]).map((k) => {
-          const base =
-            "absolute h-3 w-3 rounded-full border border-white bg-indigo-400 shadow";
-          const pos =
-            k === "nw"
-              ? "left-[-6px] top-[-6px]"
-              : k === "ne"
-              ? "right-[-6px] top-[-6px]"
-              : k === "sw"
-              ? "left-[-6px] bottom-[-6px]"
-              : "right-[-6px] bottom-[-6px]";
-
-          return (
-            <div
-              key={k}
-              className={`${base} ${pos} cursor-pointer`}
-              onMouseDown={beginDrag(k)}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
+  return {
+    containerRef,
+    style,
+    beginDrag,
+  };
 }

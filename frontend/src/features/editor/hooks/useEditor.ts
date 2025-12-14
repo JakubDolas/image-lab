@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { DEFAULT_FILTERS, type Filters, type CropRect } from "@/features/editor/types";
 
 import type { Step, DrawingMode } from "./types/editorTypes";
@@ -19,6 +19,12 @@ export function useEditor() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [ptr, setPtr] = useState(-1);
   const current = steps[ptr] ?? null;
+
+  useEffect(() => {
+    if (current) {
+      setFilters(current.filters);
+    }
+  }, [current]);
 
   const [busy, setBusy] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
