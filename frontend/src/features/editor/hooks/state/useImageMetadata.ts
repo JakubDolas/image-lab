@@ -3,7 +3,7 @@ import type { ImageSize } from "../types/editorTypes";
 
 export function useImageMetadata(current: any) {
   const [imageSize, setImageSize] = useState<ImageSize | null>(null);
-  const [colorSpace, setColorSpace] = useState("RGB");
+  const [colorSpace] = useState("RGB");
 
   useEffect(() => {
     if (!current) return;

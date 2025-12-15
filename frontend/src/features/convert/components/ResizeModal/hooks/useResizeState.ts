@@ -1,5 +1,5 @@
 import React from "react";
-import type { Handle, PreviewState, ResizeModalProps } from "./types";
+import type { Handle, PreviewState, ResizeModalProps } from "../types";
 
 function cursorFor(h: Handle) {
   switch (h) {

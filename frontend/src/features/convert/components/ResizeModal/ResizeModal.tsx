@@ -1,7 +1,7 @@
 import ModalShell from "./ModalShell";
 import PreviewCanvas from "./PreviewCanvas";
-import ControlsPanel from "./ControlsPanel";
-import { useResizeState } from "./useResizeState";
+import ControlsPanel from "./ControlsPanel/ControlsPanel";
+import { useResizeState } from "./hooks/useResizeState";
 import type { ResizeModalProps } from "./types";
 
 export default function ResizeModal(props: ResizeModalProps) {

@@ -4,12 +4,11 @@ import { ErrorAlert } from "@/features/convert/components/ErrorAlert";
 
 type Props = {
   addFiles: (files: File[]) => void;
-  openAddDialog: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
   error: string | null;
 };
 
-export function ConvertEmptyState({ addFiles, openAddDialog, inputRef, error }: Props) {
+export function ConvertEmptyState({ addFiles, inputRef, error }: Props) {
   return (
     <div className="mx-auto max-w-[1200px] space-y-6">
 

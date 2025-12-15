@@ -17,18 +17,3 @@ export type PreviewState = {
   dw: number;    // szer. docelowa (px)
   dh: number;    // wys. docelowa (px)
 };
-
-export type Props = {
-  nat: { w: number; h: number } | null;
-  w: number;
-  h: number;
-  keepAspect: boolean;
-  setKeepAspect: (v: boolean) => void;
-  limitToOrig: boolean;
-  setLimitToOrig: (v: boolean) => void;
-  onChangeW: (val: number) => void;
-  onChangeH: (val: number) => void;
-  onPickSize: (w: number, h: number) => void;
-  onApply: () => void;
-  onClose: () => void;
-};
