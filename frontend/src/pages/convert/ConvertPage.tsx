@@ -15,6 +15,7 @@ export default function ConvertPage() {
         addFiles={s.addFiles}
         openAddDialog={s.openAddDialog}
         inputRef={s.inputRef}
+        error={s.error}
       />
     );
   }
@@ -30,28 +31,29 @@ export default function ConvertPage() {
         />
 
         <div className="border-t border-white/10 px-6 py-5 space-y-4">
-          {s.files.map((f, i) => (
-            <FileCard
-              key={f.name + i}
-              file={f}
-              index={i}
-              currentFormat={(s.formats[i] ?? "webp").toLowerCase()}
-              onPickFormat={(fmt) =>
-                s.setFormats((p) => ({ ...p, [i]: fmt }))
-              }
-              quality={s.quality[i] ?? 85}
-              onQuality={(v) =>
-                s.setQuality((p) => ({ ...p, [i]: v }))
-              }
-              onRemove={s.removeAt}
-              availableFormats={availableFormats}
-              labelMap={labelMap}
-              size={s.sizes[i]}
-              onSizeChange={(sz) =>
-                s.setSizes((p) => ({ ...p, [i]: sz }))
-              }
-            />
-          ))}
+          { s.files.map((entry, i) => (
+          <FileCard
+            key={entry.file.name + i}
+            file={entry.file}
+            previewBlob={entry.previewBlob}
+            index={i}
+            currentFormat={(s.formats[i] ?? "webp").toLowerCase()}
+            onPickFormat={(fmt) =>
+              s.setFormats((p) => ({ ...p, [i]: fmt }))
+            }
+            quality={s.quality[i] ?? 85}
+            onQuality={(v) =>
+              s.setQuality((p) => ({ ...p, [i]: v }))
+            }
+            onRemove={s.removeAt}
+            availableFormats={availableFormats}
+            labelMap={labelMap}
+            size={s.sizes[i]}
+            onSizeChange={(sz) =>
+              s.setSizes((p) => ({ ...p, [i]: sz }))
+            }
+          />
+        ))}
         </div>
       </div>
 

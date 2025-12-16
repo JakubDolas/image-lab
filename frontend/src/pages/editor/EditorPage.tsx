@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import Canvas, { type CanvasHandle } from "@/features/editor/components/canvas/Canvas";
+import Canvas from "@/features/editor/components/canvas/Canvas";
+import type { CanvasHandle } 
+from "@/features/editor/components/canvas/canvas.types";
 import Sidebar from "@/features/editor/components/sidebar/Sidebar";
 import Toolbar from "@/features/editor/components/toolbar/Toolbar";
 import DownloadModal from "@/features/editor/components/toolbar/DownloadModal";
@@ -23,7 +25,9 @@ export default function EditorPage() {
       brushSize,
       brushColor,
       historyItems,
-      colorSpace
+      colorSpace,
+      originalFormat,
+      error,
     },
     actions: {
       setFilters,
@@ -54,7 +58,7 @@ export default function EditorPage() {
   const canvasRef = useRef<CanvasHandle | null>(null);
 
   if (!current) {
-    return <EditorEmptyState onPickFile={onPickFile} />;
+    return <EditorEmptyState onPickFile={onPickFile} error={error} />;
   }
 
   const handleSetDraw = () => {
@@ -108,12 +112,7 @@ export default function EditorPage() {
               ? {
                   width: imageSize.width,
                   height: imageSize.height,
-                  format:
-                    current.blob.type === "image/jpeg"
-                      ? "JPG"
-                      : current.blob.type === "image/png"
-                      ? "PNG"
-                      : "Obraz",
+                  format: originalFormat ?? "Nieznany",
                   sizeBytes: current.blob.size,
                   colorSpace: colorSpace,
                 }

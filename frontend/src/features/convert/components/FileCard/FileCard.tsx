@@ -1,32 +1,19 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Thumb from "./Thumb";
-import QualitySlider from "./QualitySlider";
-import FormatGrid from "./FormatGrid";
-import ResizeModal from "@/features/convert/components/ResizeModal";
 
+import ResizeModal from "@/features/convert/components/ResizeModal";
 import { formatBytes } from "@/features/convert/components/lib/bytes";
 
-function extOf(file: File) {
-  return file.name.split(".").pop()?.toLowerCase() ?? "unknown";
-}
+import Thumb from "./components/Thumb";
+import QualitySlider from "./components/QualitySlider";
+import FormatGrid from "./components/FormatGrid";
 
-interface Props {
-  file: File;
-  index: number;
-  currentFormat: string;
-  onPickFormat: (fmt: string) => void;
-  quality: number;
-  onQuality: (v: number) => void;
-  onRemove: (index: number) => void;
-  availableFormats: string[];
-  labelMap: Record<string, string>;
-  size?: { width: number | null; height: number | null };
-  onSizeChange?: (size: { width: number | null; height: number | null }) => void;
-}
+import { extOf, isLossy, isResized } from "./fileCard.utils";
+import type { FileCardProps } from "./fileCard.types";
 
 export default function FileCard({
   file,
+  previewBlob,
   index,
   currentFormat,
   onPickFormat,
@@ -37,10 +24,11 @@ export default function FileCard({
   labelMap,
   size,
   onSizeChange,
-}: Props) {
-  const lossy = currentFormat === "jpeg" || currentFormat === "webp";
+}: FileCardProps) {
   const [resizeOpen, setResizeOpen] = useState(false);
-  const applied = Boolean(size && (size.width || size.height));
+
+  const lossy = isLossy(currentFormat);
+  const applied = isResized(size);
 
   return (
     <motion.div
@@ -51,7 +39,7 @@ export default function FileCard({
       className="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-4"
     >
       <div className="flex items-center gap-4">
-        <Thumb file={file} />
+        <Thumb file={previewBlob} />
 
         <div className="min-w-0 flex-1">
           <div className="truncate text-[15px]">{file.name}</div>
@@ -107,10 +95,10 @@ export default function FileCard({
 
       {resizeOpen && (
         <ResizeModal
-          file={file}
+          file={previewBlob}
           initialWidth={size?.width ?? undefined}
           initialHeight={size?.height ?? undefined}
-          keepAspectDefault={true}
+          keepAspectDefault
           limitToOriginalDefault={false}
           onApply={({ width, height }) => {
             onSizeChange?.({ width, height });
@@ -119,7 +107,6 @@ export default function FileCard({
           onClose={() => setResizeOpen(false)}
         />
       )}
-
     </motion.div>
   );
 }

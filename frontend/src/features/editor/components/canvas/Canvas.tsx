@@ -4,36 +4,16 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import type { Filters, CropRect } from "@/features/editor/types";
-import { CanvasViewport, type CanvasViewportHandle } from "./CanvasViewport";
-import { ZoomPanel } from "./ZoomPanel";
-import { useZoom } from "./useZoom";
 
-type Props = {
-  imageUrl: string | null;
-  onPickFile: (file: File) => void;
-  filters: Filters;
-  cropEnabled: boolean;
-  cropRect: CropRect | null;
-  onChangeCropRect: (rect: CropRect) => void;
-  busy: boolean;
+import { CanvasViewport } from "./viewport/CanvasViewport";
+import type { CanvasViewportHandle } from "./viewport/viewport.types";
+import { ZoomPanel } from "./zoom/ZoomPanel";
+import { useZoom } from "./zoom/useZoom";
 
-  drawingMode: "off" | "draw" | "erase";
-  brushSize: number;
-  brushColor: string;
-  onApplyDrawing: (blob: Blob) => void;
-};
+import { ZOOM_CONFIG } from "./zoom/zoom.constants";
+import type { CanvasHandle, CanvasProps } from "./canvas.types";
 
-export type CanvasHandle = {
-  applyDrawing: () => void;
-  cancelDrawing: () => void;
-};
-
-const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 5.0;
-const STEP_ZOOM = 0.15;
-
-const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
+const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas(
   {
     imageUrl,
     onPickFile,
@@ -46,7 +26,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
     brushSize,
     brushColor,
     onApplyDrawing,
-  }: Props,
+  },
   ref
 ) {
   const {
@@ -57,7 +37,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
     setZoom,
     minZoom,
     maxZoom,
-  } = useZoom({ min: MIN_ZOOM, max: MAX_ZOOM, step: STEP_ZOOM });
+  } = useZoom(ZOOM_CONFIG);
 
   const viewportRef = useRef<CanvasViewportHandle | null>(null);
 
@@ -66,12 +46,8 @@ const Canvas = forwardRef<CanvasHandle, Props>(function CanvasInner(
   }, [imageUrl, setZoom]);
 
   useImperativeHandle(ref, () => ({
-    applyDrawing() {
-      viewportRef.current?.applyDrawing();
-    },
-    cancelDrawing() {
-      viewportRef.current?.cancelDrawing();
-    },
+    applyDrawing: () => viewportRef.current?.applyDrawing(),
+    cancelDrawing: () => viewportRef.current?.cancelDrawing(),
   }));
 
   return (

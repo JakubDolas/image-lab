@@ -3,6 +3,8 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from typing import List, Tuple
 import json
 from pydantic import ValidationError
+from io import BytesIO
+
 
 from app.domain.conversion.service import convert_single_image
 from app.domain.conversion.utils import zip_many, normalize_format, supported_formats
@@ -99,3 +101,26 @@ async def convert_zip_custom(
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="converted.zip"'}
     )
+
+
+@router.post("/to-editor")
+async def convert_to_editor(file: UploadFile = File(...)):
+    """
+    Przyjmuje JEDEN plik (dowolnego formatu obsługiwanego przez Pillow / ImageMagick backend)
+    i zwraca go skonwertowanego do PNG (pierwsza strona / klatka dla formatów wielostronicowych).
+    """
+    data = await file.read()
+    try:
+        out_name, out_bytes = convert_single_image(
+            filename=file.filename,
+            data=data,
+            target_format="png",   # zawsze PNG dla edytora
+            width=None,
+            height=None,
+            quality=None
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return StreamingResponse(BytesIO(out_bytes), media_type="image/png",
+                             headers={"Content-Disposition": f'inline; filename="{out_name}"'})

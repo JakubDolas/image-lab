@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { getSupportedFormats } from "@/features/convert/api";
+import type { SupportedFormatsResponse } from "@/features/convert/api";
 
-const POPULAR = ["jpeg", "png", "webp"];
+const POPULAR_FORMATS = ["jpeg", "png", "webp"] as const;
 
 export function useFormats() {
-  const [availableFormats, setAvailableFormats] = useState<string[]>(POPULAR);
+  const [availableFormats, setAvailableFormats] = useState<string[]>(
+    [...POPULAR_FORMATS]
+  );
+
   const [labelMap, setLabelMap] = useState<Record<string, string>>({
     jpeg: "jpg",
     tiff: "tif",
@@ -14,14 +18,18 @@ export function useFormats() {
     let cancelled = false;
 
     getSupportedFormats()
-      .then(({ formats, preferred_ext }) => {
+      .then((data: SupportedFormatsResponse) => {
         if (cancelled) return;
 
-        const rest = formats.filter((f) => !POPULAR.includes(f));
-        setAvailableFormats([...POPULAR, ...rest]);
-        setLabelMap(preferred_ext ?? {});
+        const rest = data.formats.filter(
+          (f) => !POPULAR_FORMATS.includes(f as any)
+        );
+
+        setAvailableFormats([...POPULAR_FORMATS, ...rest]);
+        setLabelMap(data.preferred_ext ?? {});
       })
-      .catch(() => {});
+      .catch(() => {
+      });
 
     return () => {
       cancelled = true;

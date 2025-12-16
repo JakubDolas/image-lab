@@ -1,7 +1,7 @@
 export type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
 export type ResizeModalProps = {
-  file: File;
+  file: Blob | File;
   initialWidth?: number | null;
   initialHeight?: number | null;
   keepAspectDefault?: boolean;
@@ -16,19 +16,4 @@ export type PreviewState = {
   ph: number;    // wys. wyświetlana
   dw: number;    // szer. docelowa (px)
   dh: number;    // wys. docelowa (px)
-};
-
-export type Props = {
-  nat: { w: number; h: number } | null;
-  w: number;
-  h: number;
-  keepAspect: boolean;
-  setKeepAspect: (v: boolean) => void;
-  limitToOrig: boolean;
-  setLimitToOrig: (v: boolean) => void;
-  onChangeW: (val: number) => void;
-  onChangeH: (val: number) => void;
-  onPickSize: (w: number, h: number) => void;
-  onApply: () => void;
-  onClose: () => void;
 };

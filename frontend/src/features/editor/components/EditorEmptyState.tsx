@@ -1,10 +1,12 @@
 import UploadArea from "@/features/convert/components/UploadArea";
+import { ErrorAlert } from "@/features/convert/components/ErrorAlert";
 
 type Props = {
   onPickFile: (file: File) => void;
+  error: string | null;
 };
 
-export function EditorEmptyState({ onPickFile }: Props) {
+export function EditorEmptyState({ onPickFile, error }: Props) {
   return (
     <div className="mx-auto max-w-[1200px] space-y-6">
       <div className="rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] p-4 sm:p-5">
@@ -29,11 +31,14 @@ export function EditorEmptyState({ onPickFile }: Props) {
         </ol>
       </div>
 
+      {error && <ErrorAlert message={error} />}
+
       <div className="rounded-2xl border border-white/10 p-5 bg-gradient-to-br from-indigo-500/10 via-slate-800/30 to-slate-900/40">
         <div className="rounded-2xl border-2 border-dashed border-white/15 p-8">
           <UploadArea onFiles={(files) => files[0] && onPickFile(files[0])} />
         </div>
       </div>
+
     </div>
   );
 }

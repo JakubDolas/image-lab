@@ -1,4 +1,4 @@
-import { useSupportedFormats } from "@/features/editor/hooks/useSupportedFormats";
+import { useEditorFormats } from "@/features/editor/hooks/formats/useEditorFormats";
 
 type Props = {
   open: boolean;
@@ -25,7 +25,7 @@ export default function DownloadModal({
   onCancel,
   onConfirm,
 }: Props) {
-  const { formats, preferredExt, loading, error } = useSupportedFormats();
+  const { formats, preferredExt, loading, error } = useEditorFormats();
 
   if (!open) return null;
 
