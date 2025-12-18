@@ -13,7 +13,7 @@ export function EditorEmptyState({ onPickFile, error }: Props) {
         <ol className="space-y-2">
           {[
             { n: 1, t: "Dodaj zdjęcie" },
-            { n: 2, t: "Użyj narzędzi po lewej (AI, kolory, kadrowanie)" },
+            { n: 2, t: "Użyj narzędzi po lewej (AI, kolory, kadrowanie, rysowanie, . . . )" },
             { n: 3, t: "Pobierz efekt lub edytuj dalej" },
           ].map((s) => (
             <li

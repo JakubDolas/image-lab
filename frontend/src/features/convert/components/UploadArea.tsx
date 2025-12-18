@@ -31,7 +31,7 @@ export default function UploadArea({ onFiles }: Props) {
         </svg>
       </div>
       <h2 className="mt-3 text-lg font-semibold">Przeciągnij i upuść pliki tutaj</h2>
-      <p className="text-xs text-slate-300">Obsługiwane: .jpg .png .webp .gif .bmp .tiff</p>
+      <p className="text-xs text-slate-300">Obsługiwane: .jpg .png .webp .gif .bmp .tiff i inne</p>
       <button className="mt-4 mb-5 px-4 py-2 rounded-xl bg-white/10 border border-white/10 hover:bg-white/15" type="button">
         Wybierz z dysku
       </button>
