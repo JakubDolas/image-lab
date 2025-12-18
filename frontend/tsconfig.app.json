@@ -24,7 +24,7 @@
     },
 
     /* Typing */
-    "types": ["vite/client"],
+    "types": ["vite/client", "vitest/globals"],
 
     /* Linting */
     "strict": true,

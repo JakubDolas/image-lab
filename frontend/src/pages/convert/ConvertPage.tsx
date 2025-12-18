@@ -13,7 +13,6 @@ export default function ConvertPage() {
     return (
       <ConvertEmptyState
         addFiles={s.addFiles}
-        openAddDialog={s.openAddDialog}
         inputRef={s.inputRef}
         error={s.error}
       />
