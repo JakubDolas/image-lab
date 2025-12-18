@@ -9,7 +9,7 @@ describe("HistoryPanel", () => {
 
   it("nie renderuje się, gdy items = null / undefined", () => {
     const { container } = render(
-      // @ts-expect-error
+      // @ts-expect-error testujemy brak danych
       <HistoryPanel items={undefined} />
     );
     expect(container.firstChild).toBeNull();
