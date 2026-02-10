@@ -67,7 +67,6 @@ def upscale_image_bytes(data: bytes) -> BytesIO:
                 out_arr = out_arr[0]
             elif out_arr.ndim != 3:
                 raise RuntimeError(f"Unexpected output shape from ESRGAN: {out_arr.shape}")
-            # -------------------
 
             out_arr = np.clip(out_arr * 255.0, 0, 255).astype(np.uint8)
             out_arr = np.transpose(out_arr, (1, 2, 0))

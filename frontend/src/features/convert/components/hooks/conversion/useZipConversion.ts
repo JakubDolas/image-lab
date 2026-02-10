@@ -35,6 +35,9 @@ export function useZipConversion(
       );
 
       setZipBlob(blob);
+
+      window.alert("Konwersja zakończona! Kliknij przycisk Pobierz, aby pobrać przekonwertowane obrazy.");
+    
     } catch {
       setError("Wystąpił błąd podczas konwersji.");
     } finally {

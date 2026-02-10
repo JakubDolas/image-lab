@@ -19,7 +19,7 @@ def convert_single_image(
     except UnidentifiedImageError:
         raise ValueError(f"Plik nie jest obrazem lub format nieobsługiwany: {filename}")
 
-    # Jeśli plik jest wielostronicowy (TIFF, PDF, GIF), weź pierwszą "klatkę/stronę"
+    # Jeśli plik jest wielostronicowy (GIF), weź pierwszą "klatkę/stronę"
     try:
         img.seek(0)
     except Exception:
@@ -55,7 +55,7 @@ def convert_single_image(
     try:
         img.save(buf, format=target_format.upper(), **save_kwargs)
     except Exception as e:
-        # jeśli Pillow nie potrafi zapisać w danym formacie, rzuć czytelny błąd
+        # jeśli Pillow nie potrafi zapisać w danym formacie, rzuć błąd
         raise ValueError(f"Nie można zapisać obrazu w formacie {target_format}: {e}")
 
     buf.seek(0)
