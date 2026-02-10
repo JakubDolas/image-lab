@@ -31,6 +31,7 @@ Dwa główne endpointy:
 ```bash
 cd frontend
 npm install
+npm install lucide-react react-icons
 npm run dev
 ```
 Frontend będzie dostępny pod adresem:
@@ -99,3 +100,4 @@ Obecnie trwają prace nad **testami frontendowymi oraz backendowymi**, których 
 - **Testy:** Vitest, React Testing Library
 
 - **Konteneryzacja:** Docker
+
